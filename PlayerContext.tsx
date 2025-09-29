@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import type { Track } from './data.ts';
 
+// FIX: Removed conflicting redeclaration of MediaMetadata and related types.
+// They are already available in the standard DOM typings.
 declare global {
   interface Window {
     onYouTubeIframeAPIReady: () => void;
@@ -36,15 +38,41 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(1);
 
+  const currentTrack = playlist[currentIndex] || null;
+
   const playNext = useCallback(() => {
-      if (!playlist.length || !playerRef.current) return;
-      playerRef.current.nextVideo();
-  }, [playlist]);
+    if (playlist.length === 0 || !playerRef.current) return;
+    const nextIndex = (currentIndex + 1) % playlist.length;
+    playerRef.current.playVideoAt(nextIndex);
+  }, [currentIndex, playlist.length]);
 
   const playPrevious = useCallback(() => {
-      if (!playlist.length || !playerRef.current) return;
-      playerRef.current.previousVideo();
-  }, [playlist]);
+    if (playlist.length === 0 || !playerRef.current) return;
+    const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+    playerRef.current.playVideoAt(prevIndex);
+  }, [currentIndex, playlist.length]);
+
+  const playVideo = useCallback(() => {
+    if (playerRef.current?.playVideo) {
+      playerRef.current.playVideo();
+    }
+  }, []);
+
+  const pauseVideo = useCallback(() => {
+    if (playerRef.current?.pauseVideo) {
+      playerRef.current.pauseVideo();
+    }
+  }, []);
+  
+  const togglePlay = useCallback(() => {
+      if (!currentTrack || !playerRef.current) return;
+      const playerState = playerRef.current.getPlayerState();
+      if (playerState === window.YT.PlayerState.PLAYING) {
+        pauseVideo();
+      } else {
+        playVideo();
+      }
+  }, [currentTrack, playVideo, pauseVideo]);
 
   const callbacksRef = useRef({
     onPlayerReady: (_event: any) => {},
@@ -114,8 +142,6 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const currentTrack = playlist[currentIndex] || null;
-
   const playPlaylist = (tracks: Track[], startIndex = 0) => {
     setPlaylist(tracks);
     setCurrentIndex(startIndex);
@@ -124,16 +150,6 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
         const videoIds = tracks.map(t => t.videoId);
         playerRef.current.loadPlaylist(videoIds, startIndex);
     }
-  };
-  
-  const togglePlay = () => {
-      if (!currentTrack || !playerRef.current) return;
-      const playerState = playerRef.current.getPlayerState();
-      if (playerState === window.YT.PlayerState.PLAYING) {
-        playerRef.current.pauseVideo();
-      } else {
-        playerRef.current.playVideo();
-      }
   };
   
   const seekTo = (time: number) => {
@@ -150,6 +166,29 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
       }
       setVolumeState(clampedVolume);
   };
+  
+  // Media Session API integration
+  useEffect(() => {
+    if ('mediaSession' in navigator && currentTrack) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: currentTrack.title,
+            artist: currentTrack.artist,
+            album: 'Next Music',
+            artwork: [{ src: currentTrack.albumArt, sizes: '512x512', type: 'image/jpeg' }]
+        });
+
+        navigator.mediaSession.setActionHandler('play', playVideo);
+        navigator.mediaSession.setActionHandler('pause', pauseVideo);
+        navigator.mediaSession.setActionHandler('previoustrack', playPrevious);
+        navigator.mediaSession.setActionHandler('nexttrack', playNext);
+    }
+  }, [currentTrack, playVideo, pauseVideo, playNext, playPrevious]);
+
+  useEffect(() => {
+      if ('mediaSession' in navigator) {
+          navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      }
+  }, [isPlaying]);
 
   const value = {
     isPlaying,
