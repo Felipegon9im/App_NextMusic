@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -11,6 +11,7 @@ import {
   ChevronDownIcon,
   PlusIcon,
   QueueIcon,
+  VideoIcon,
 } from './Icons.tsx';
 import { usePlayer } from './PlayerContext.tsx';
 import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
@@ -45,11 +46,22 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded, setIsQ
     setShuffleMode,
     repeatMode,
     setRepeatMode,
+    isVideoMode,
+    toggleVideoMode,
   } = usePlayer();
   
   const progressBarRef = useRef<HTMLDivElement>(null);
   const volumeBarRef = useRef<HTMLDivElement>(null);
   const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null });
+
+  useEffect(() => {
+    document.body.classList.toggle('video-mode-active', isVideoMode);
+    
+    // When unmounting, ensure the class is removed
+    return () => {
+        document.body.classList.remove('video-mode-active');
+    };
+  }, [isVideoMode]);
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -188,6 +200,11 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded, setIsQ
               </div>
             </div>
         )}
+        {(!isMobile || isPlayerExpanded) && (
+            <button className="icon-button" title="Assistir vídeo" onClick={toggleVideoMode}>
+                <VideoIcon />
+            </button>
+        )}
         {!isMobile && (
              <button className="icon-button" title="Fila" onClick={() => setIsQueueVisible(true)}>
                 <QueueIcon />
@@ -202,6 +219,13 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded, setIsQ
         <footer className={playerClasses}>
           {playerContent}
         </footer>
+        {isVideoMode && (
+            <div className="video-player-overlay" onClick={toggleVideoMode}>
+                <button className="close-video-button" onClick={(e) => { e.stopPropagation(); toggleVideoMode(); }} title="Fechar vídeo">
+                    <PlusIcon style={{ transform: 'rotate(45deg)', width: '24px', height: '24px', fill: 'currentColor' }} />
+                </button>
+            </div>
+        )}
         <AddToPlaylistPopover
             anchorEl={popover.anchorEl}
             show={popover.show}

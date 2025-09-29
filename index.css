@@ -1246,3 +1246,56 @@ body {
     }
 
 }
+
+/* Video Player Overlay */
+.video-player-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(8px);
+}
+
+.close-video-button {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    z-index: 1012;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.close-video-button:hover {
+    background: #000;
+    transform: scale(1.1);
+}
+
+/* 
+  When video mode is active, override the default absolute positioning 
+  of the youtube player to bring it into view.
+*/
+body.video-mode-active #youtube-player {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 1280px;
+    height: calc(90vw * 9 / 16);
+    max-height: 720px;
+    z-index: 1011;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+}

@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Track, Playlist } from './data.ts';
-import { getDefaultPlaylists } from './data.ts';
 import { useNotification } from './NotificationContext.tsx';
 
 const LOCAL_STORAGE_KEY = 'next-music-playlists';
@@ -25,7 +24,7 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             console.error("Failed to parse playlists from localStorage", error);
         }
-        return getDefaultPlaylists();
+        return [];
     });
 
     const { showNotification } = useNotification();

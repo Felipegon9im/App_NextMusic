@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { mainContentCards, searchYoutube, getTrendingMusic } from './data.ts';
+import { getTrendingMusic, searchYoutube } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import { useHistory } from './HistoryContext.tsx';
@@ -8,6 +8,9 @@ import type { View } from './App.tsx';
 import { SearchIcon, PlayIcon, TrashIcon, PlusIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
+import { GoogleGenAI, Type } from '@google/genai';
+
+const API_KEY = process.env.API_KEY;
 
 const TrackCard = ({ track, playPlaylist }: { track: Track, playPlaylist: (tracks: Track[]) => void }) => {
     const handlePlay = (e: React.MouseEvent) => {
@@ -28,59 +31,105 @@ const TrackCard = ({ track, playPlaylist }: { track: Track, playPlaylist: (track
 };
 
 
-const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) => void }) => {
+const Home = () => {
   const { playPlaylist } = usePlayer();
+  const { history } = useHistory();
   const [trending, setTrending] = useState<Track[]>([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
+  const [suggestions, setSuggestions] = useState<Track[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [suggestionsError, setSuggestionsError] = useState<string | null>(null);
 
   useEffect(() => {
     getTrendingMusic()
         .then(setTrending)
         .catch(err => {
             console.error("Failed to fetch trending music:", err);
-            // Optionally set an error state to show in the UI
         })
         .finally(() => setLoadingTrending(false));
   }, []);
 
-  const Card = ({ title, description, imageUrl, tracks }: {
-    title: string;
-    description: string;
-    imageUrl: string;
-    tracks: Track[];
-  }) => {
-    const handlePlay = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        playPlaylist(tracks);
-    };
+  useEffect(() => {
+    const generateSuggestions = async () => {
+        if (history.length === 0) {
+            setSuggestions([]);
+            return;
+        }
 
-    const handleViewPlaylist = () => {
-        onSelectPlaylist({name: title, tracks});
-    };
+        if (!API_KEY) {
+            setSuggestionsError("A chave da API do Gemini não está configurada.");
+            return;
+        }
 
-    return (
-      <div className="card" onClick={handleViewPlaylist}>
-        <img src={imageUrl} alt={title} />
-        <h4>{title}</h4>
-        <p>{description}</p>
-        <button className="play-button-overlay" onClick={handlePlay}>
-            <PlayIcon />
-        </button>
-      </div>
-    );
-  };
+        setLoadingSuggestions(true);
+        setSuggestionsError(null);
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: API_KEY });
+            
+            const recentTracks = history.slice(0, 5).map(t => `"${t.title}" por ${t.artist}`).join(', ');
+            const prompt = `Com base nessas músicas ouvidas recentemente: ${recentTracks}, sugira uma lista de 10 músicas semelhantes. Forneça apenas o título da música e o artista.`;
+
+            const schema = {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  title: { type: Type.STRING },
+                  artist: { type: Type.STRING },
+                },
+                required: ['title', 'artist'],
+              },
+            };
+
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                contents: prompt,
+                config: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema,
+                },
+            });
+
+            const suggestedSongs = JSON.parse(response.text);
+
+            const trackPromises = suggestedSongs.map((song: { title: string; artist: string }) => 
+                searchYoutube(`${song.title} ${song.artist}`).then(results => results[0]).catch(() => null)
+            );
+            
+            const tracks = (await Promise.all(trackPromises)).filter((track): track is Track => track !== null);
+            setSuggestions(tracks);
+
+        } catch (err: any) {
+            console.error("Failed to generate suggestions:", err);
+            setSuggestionsError('Não foi possível gerar sugestões no momento.');
+        } finally {
+            setLoadingSuggestions(false);
+        }
+    };
+    
+    generateSuggestions();
+
+  }, [history]);
 
   return (
     <>
-      <h1>Boa noite</h1>
-      <div className="card-grid">
-        {mainContentCards.map(card => (
-          <Card
-            key={card.title}
-            {...card}
-          />
-        ))}
-      </div>
+      {history.length > 0 ? (
+          <div style={{marginBottom: '2.5rem'}}>
+              <h2>Sugerido para você</h2>
+              {loadingSuggestions && <p className="loading-indicator">Gerando suas sugestões...</p>}
+              {suggestionsError && <p className="error-message">{suggestionsError}</p>}
+              {!loadingSuggestions && suggestions.length > 0 && (
+                  <div className="card-grid">
+                      {suggestions.map((track, index) => (
+                          <TrackCard key={`${track.id}-${index}`} track={track} playPlaylist={playPlaylist} />
+                      ))}
+                  </div>
+              )}
+          </div>
+      ) : (
+         <p className="empty-state-message">Ouça algumas músicas para receber sugestões personalizadas.</p>
+      )}
       
       {loadingTrending && <p className="loading-indicator" style={{marginTop: '2rem'}}>Carregando tendências...</p>}
       {trending.length > 0 && (
@@ -322,6 +371,6 @@ export const MainView = ({ activeView, selectedPlaylist, onSelectPlaylist }: Mai
         return <PlaylistView playlist={selectedPlaylist} />;
     case 'home':
     default:
-      return <Home onSelectPlaylist={onSelectPlaylist} />;
+      return <Home />;
   }
 };

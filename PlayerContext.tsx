@@ -21,6 +21,7 @@ interface PlayerContextType {
   volume: number;
   shuffleMode: boolean;
   repeatMode: RepeatMode;
+  isVideoMode: boolean;
   playPlaylist: (tracks: Track[], startIndex?: number) => void;
   togglePlay: () => void;
   playNext: () => void;
@@ -29,6 +30,7 @@ interface PlayerContextType {
   setVolume: (volume: number) => void;
   setShuffleMode: (shuffle: boolean) => void;
   setRepeatMode: (mode: RepeatMode) => void;
+  toggleVideoMode: () => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -45,6 +47,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [volume, setVolumeState] = useState(1);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+  const [isVideoMode, setIsVideoMode] = useState(false);
   const { addToHistory } = useHistory();
 
 
@@ -79,6 +82,10 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
         playVideo();
       }
   }, [currentTrack, playVideo, pauseVideo]);
+  
+  const toggleVideoMode = () => {
+    setIsVideoMode(prev => !prev);
+  };
 
   const callbacksRef = useRef({
     onPlayerReady: (_event: any) => {},
@@ -235,6 +242,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     volume,
     shuffleMode,
     repeatMode,
+    isVideoMode,
     playPlaylist,
     togglePlay,
     playNext,
@@ -243,6 +251,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     setVolume,
     setShuffleMode: handleSetShuffle,
     setRepeatMode,
+    toggleVideoMode,
   };
 
   // FIX: Corrected a typo in the JSX closing tag.
