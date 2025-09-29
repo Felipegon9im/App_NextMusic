@@ -55,6 +55,27 @@ export const searchYoutube = async (query: string): Promise<Track[]> => {
   }));
 };
 
+export const getTrendingMusic = async (): Promise<Track[]> => {
+  if (!API_KEY) {
+    throw new Error("A chave da API do YouTube não está configurada.");
+  }
+  const response = await fetch(`${API_URL}/videos?part=snippet&chart=mostPopular&videoCategoryId=10&regionCode=BR&key=${API_KEY}&maxResults=20`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("YouTube API Error (Trending):", errorData);
+    throw new Error(errorData.error?.message || 'Falha ao buscar as músicas em alta.');
+  }
+  const data = await response.json();
+  if (!data.items) return [];
+  return data.items.map((item: any) => ({
+    id: item.id,
+    videoId: item.id,
+    title: item.snippet.title,
+    artist: item.snippet.channelTitle,
+    albumArt: item.snippet.thumbnails.high.url,
+  }));
+};
+
 
 export const tracks: Track[] = [
   {

@@ -1,16 +1,47 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { mainContentCards, searchYoutube } from './data.ts';
+import { mainContentCards, searchYoutube, getTrendingMusic } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
+import { useHistory } from './HistoryContext.tsx';
 import type { Track, Playlist } from './data.ts';
 import type { View } from './App.tsx';
 import { SearchIcon, PlayIcon, TrashIcon, PlusIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
 
+const TrackCard = ({ track, playPlaylist }: { track: Track, playPlaylist: (tracks: Track[]) => void }) => {
+    const handlePlay = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        playPlaylist([track]);
+    };
+
+    return (
+      <div className="card" onClick={handlePlay}>
+        <img src={track.albumArt} alt={track.title} />
+        <h4>{track.title}</h4>
+        <p>{track.artist}</p>
+        <button className="play-button-overlay" onClick={handlePlay}>
+            <PlayIcon />
+        </button>
+      </div>
+    );
+};
+
 
 const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) => void }) => {
   const { playPlaylist } = usePlayer();
+  const [trending, setTrending] = useState<Track[]>([]);
+  const [loadingTrending, setLoadingTrending] = useState(true);
+
+  useEffect(() => {
+    getTrendingMusic()
+        .then(setTrending)
+        .catch(err => {
+            console.error("Failed to fetch trending music:", err);
+            // Optionally set an error state to show in the UI
+        })
+        .finally(() => setLoadingTrending(false));
+  }, []);
 
   const Card = ({ title, description, imageUrl, tracks }: {
     title: string;
@@ -50,6 +81,18 @@ const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) =>
           />
         ))}
       </div>
+      
+      {loadingTrending && <p className="loading-indicator" style={{marginTop: '2rem'}}>Carregando tendências...</p>}
+      {trending.length > 0 && (
+          <div style={{marginTop: '2.5rem'}}>
+              <h2>Em alta no Brasil</h2>
+              <div className="card-grid">
+                  {trending.map(track => (
+                      <TrackCard key={track.id} track={track} playPlaylist={playPlaylist} />
+                  ))}
+              </div>
+          </div>
+      )}
     </>
   );
 };
@@ -57,6 +100,7 @@ const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) =>
 const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) => void }) => {
     const { userPlaylists, deletePlaylist } = usePlaylists();
     const { playPlaylist } = usePlayer();
+    const { history } = useHistory();
 
     const Card = ({ playlist }: { playlist: Playlist }) => {
         const handlePlay = (e: React.MouseEvent) => {
@@ -93,6 +137,20 @@ const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) 
     return (
         <>
             <h1>Sua Biblioteca</h1>
+            
+            {history.length > 0 && (
+                 <div style={{marginBottom: '2.5rem'}}>
+                    <h2>Ouvido recentemente</h2>
+                    <div className="card-grid">
+                        {history.map((track, index) => (
+                            <TrackCard key={`${track.id}-${index}`} track={track} playPlaylist={playPlaylist} />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            { userPlaylists.length > 0 && <h2>Suas Playlists</h2> }
+            
             {userPlaylists.length > 0 ? (
                 <div className="card-grid">
                     {userPlaylists.map(playlist => (

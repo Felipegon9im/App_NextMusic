@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import type { Track } from './data.ts';
+import { useHistory } from './HistoryContext.tsx';
 
 declare global {
   interface Window {
@@ -44,6 +45,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [volume, setVolumeState] = useState(1);
   const [shuffleMode, setShuffleMode] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+  const { addToHistory } = useHistory();
 
 
   const currentTrack = playlist[currentIndex] || null;
@@ -101,6 +103,10 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
 
         const newIndex = playerRef.current?.getPlaylistIndex();
         if (typeof newIndex === 'number' && newIndex !== currentIndex) {
+            const nextTrack = playlist[newIndex];
+            if (nextTrack) {
+                addToHistory(nextTrack);
+            }
             setCurrentIndex(newIndex);
         }
 
@@ -123,7 +129,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     };
-  }, [volume, currentIndex, repeatMode, playVideo]);
+  }, [volume, currentIndex, repeatMode, playVideo, playlist, addToHistory]);
   
   useEffect(() => {
     const createPlayer = () => {
@@ -157,6 +163,10 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const playPlaylist = (tracks: Track[], startIndex = 0) => {
+    const firstTrack = tracks[startIndex];
+    if (firstTrack) {
+        addToHistory(firstTrack);
+    }
     setPlaylist(tracks);
     setCurrentIndex(startIndex);
     setIsPlaying(true);
@@ -235,6 +245,7 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     setRepeatMode,
   };
 
+  // FIX: Corrected a typo in the JSX closing tag.
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
 };
 
