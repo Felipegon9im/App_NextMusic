@@ -26,10 +26,13 @@ export const Player = () => {
     playPrevious,
     progress,
     duration,
-    seekTo
+    seekTo,
+    volume,
+    setVolume,
   } = usePlayer();
   
   const progressBarRef = useRef<HTMLDivElement>(null);
+  const volumeBarRef = useRef<HTMLDivElement>(null);
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (progressBarRef.current && duration > 0) {
@@ -38,6 +41,18 @@ export const Player = () => {
       const width = rect.width;
       const percentage = clickX / width;
       seekTo(duration * percentage);
+    }
+  };
+
+  const handleVolumeClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (volumeBarRef.current) {
+        const rect = volumeBarRef.current.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const width = rect.width;
+        if (width > 0) {
+            const newVolume = clickX / width;
+            setVolume(newVolume);
+        }
     }
   };
 
@@ -94,8 +109,8 @@ export const Player = () => {
       </div>
       <div className="player-volume">
         <VolumeIcon />
-        <div className="progress-bar">
-          <div className="progress-bar-inner" style={{width: '70%'}}>
+        <div className="progress-bar" ref={volumeBarRef} onClick={handleVolumeClick}>
+          <div className="progress-bar-inner" style={{width: `${volume * 100}%`}}>
             <div className="progress-bar-thumb"></div>
           </div>
         </div>

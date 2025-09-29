@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import type { Track } from './data.ts';
 
 declare global {
@@ -14,34 +14,55 @@ interface PlayerContextType {
   playlist: Track[];
   progress: number;
   duration: number;
+  volume: number;
   playPlaylist: (tracks: Track[], startIndex?: number) => void;
   togglePlay: () => void;
   playNext: () => void;
   playPrevious: () => void;
   seekTo: (time: number) => void;
+  setVolume: (volume: number) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const playerRef = useRef<any>(null);
-  // FIX: Initialize useRef with null and use a more flexible type for the interval ID to avoid potential type errors.
-  const progressInterval = useRef<any>(null);
+  const progressInterval = useRef<number | undefined>(undefined);
 
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolumeState] = useState(1);
+
+  const playNext = useCallback(() => {
+      if (!playlist.length || !playerRef.current) return;
+      playerRef.current.nextVideo();
+  }, [playlist]);
+
+  const playPrevious = useCallback(() => {
+      if (!playlist.length || !playerRef.current) return;
+      playerRef.current.previousVideo();
+  }, [playlist]);
+
+  const callbacksRef = useRef({
+    onPlayerReady: (_event: any) => {},
+    onPlayerStateChange: (_event: any) => {},
+  });
 
   useEffect(() => {
-    const onPlayerStateChange = (event: any) => {
+    callbacksRef.current.onPlayerReady = (event: any) => {
+        event.target.setVolume(volume * 100);
+    };
+
+    callbacksRef.current.onPlayerStateChange = (event: any) => {
       if (event.data === window.YT.PlayerState.PLAYING) {
         setIsPlaying(true);
         setDuration(playerRef.current?.getDuration() ?? 0);
         
         clearInterval(progressInterval.current);
-        progressInterval.current = setInterval(() => {
+        progressInterval.current = window.setInterval(() => {
           const currentTime = playerRef.current?.getCurrentTime() ?? 0;
           setProgress(currentTime);
         }, 250);
@@ -60,8 +81,13 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
         playNext();
       }
     };
-    
-    window.onYouTubeIframeAPIReady = () => {
+  }, [volume, currentIndex, playNext]);
+  
+  useEffect(() => {
+    const createPlayer = () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
       playerRef.current = new window.YT.Player('youtube-player', {
         height: '390',
         width: '640',
@@ -70,13 +96,16 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
           'controls': 0,
         },
         events: {
-          'onStateChange': onPlayerStateChange
+          'onReady': (event: any) => callbacksRef.current.onPlayerReady(event),
+          'onStateChange': (event: any) => callbacksRef.current.onPlayerStateChange(event)
         }
       });
     };
-
+    
     if (window.YT && window.YT.Player) {
-      window.onYouTubeIframeAPIReady();
+      createPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = createPlayer;
     }
 
     return () => {
@@ -106,16 +135,6 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
         playerRef.current.playVideo();
       }
   };
-
-  const playNext = () => {
-      if (!playlist.length || !playerRef.current) return;
-      playerRef.current.nextVideo();
-  };
-
-  const playPrevious = () => {
-      if (!playlist.length || !playerRef.current) return;
-      playerRef.current.previousVideo();
-  };
   
   const seekTo = (time: number) => {
       if(playerRef.current) {
@@ -124,6 +143,13 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
       }
   };
 
+  const setVolume = (newVolume: number) => {
+      const clampedVolume = Math.max(0, Math.min(1, newVolume));
+      if (playerRef.current?.setVolume) {
+          playerRef.current.setVolume(clampedVolume * 100);
+      }
+      setVolumeState(clampedVolume);
+  };
 
   const value = {
     isPlaying,
@@ -131,11 +157,13 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     playlist,
     progress,
     duration,
+    volume,
     playPlaylist,
     togglePlay,
     playNext,
     playPrevious,
     seekTo,
+    setVolume,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;
