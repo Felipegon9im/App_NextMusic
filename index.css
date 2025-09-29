@@ -649,6 +649,36 @@ body {
   font-size: 0.9rem;
 }
 
+.track-actions {
+    display: flex;
+    align-items: center;
+}
+.track-actions .icon-button {
+    background: none;
+    border: none;
+    color: var(--text-subdued);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+.search-result-item:hover .track-actions .icon-button {
+    opacity: 1;
+}
+.track-actions .icon-button:hover {
+    color: var(--text-base);
+    background-color: var(--background-elevated-highlight);
+}
+.track-actions .icon-button svg {
+    width: 16px;
+    height: 16px;
+}
+
+
 .loading-indicator, .error-message {
     margin-top: 1rem;
     color: var(--text-subdued);
@@ -726,12 +756,28 @@ body {
     box-shadow: 0 4px 20px var(--accent-glow);
 }
 
-.ai-playlist-results h2 {
+.ai-playlist-results {
+    width: 100%;
+}
+.ai-playlist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+.ai-playlist-header h2 {
     text-align: left;
-    margin-bottom: 1.5rem;
+    margin: 0;
+}
+.ai-playlist-header .ai-submit-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    flex-shrink: 0;
 }
 
-/* Context Menu */
+
+/* Add to Playlist Popover */
 .context-menu-overlay {
     position: fixed;
     top: 0;
@@ -749,7 +795,16 @@ body {
     padding: 4px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     z-index: 999;
-    min-width: 200px;
+    min-width: 220px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.context-menu-header {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-bottom: 1px solid var(--background-highlight);
 }
 
 .context-menu-item {
@@ -766,21 +821,6 @@ body {
     background-color: var(--background-highlight);
 }
 
-.context-menu-item--submenu:hover .context-menu--submenu {
-    display: block;
-}
-
-.context-menu--submenu {
-    display: none;
-    position: absolute;
-    left: 100%;
-    top: -5px; /* Adjust based on padding */
-    background-color: var(--background-elevated-highlight);
-    border-radius: 4px;
-    padding: 4px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-    min-width: 200px;
-}
 
 /* Playlist & Library View */
 .playlist-view-header {

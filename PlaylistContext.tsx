@@ -6,9 +6,10 @@ const LOCAL_STORAGE_KEY = 'next-music-playlists';
 
 interface PlaylistContextType {
   userPlaylists: Playlist[];
-  createPlaylist: (name: string) => void;
+  createPlaylist: (name: string, tracks?: Track[]) => void;
   deletePlaylist: (name: string) => void;
   addTrackToPlaylist: (playlistName: string, track: Track) => void;
+  removeTrackFromPlaylist: (playlistName: string, trackId: string) => void;
 }
 
 const PlaylistContext = createContext<PlaylistContextType | undefined>(undefined);
@@ -34,12 +35,12 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [userPlaylists]);
 
-    const createPlaylist = (name: string) => {
+    const createPlaylist = (name: string, tracks: Track[] = []) => {
         if (userPlaylists.some(pl => pl.name === name)) {
             alert("Uma playlist com este nome já existe.");
             return;
         }
-        const newPlaylist: Playlist = { name, tracks: [] };
+        const newPlaylist: Playlist = { name, tracks };
         setUserPlaylists(prev => [...prev, newPlaylist]);
     };
 
@@ -61,12 +62,24 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
             })
         );
     };
+    
+    const removeTrackFromPlaylist = (playlistName: string, trackId: string) => {
+        setUserPlaylists(prev =>
+            prev.map(pl => {
+                if (pl.name === playlistName) {
+                    return { ...pl, tracks: pl.tracks.filter(t => t.id !== trackId) };
+                }
+                return pl;
+            })
+        );
+    };
 
     const value = {
         userPlaylists,
         createPlaylist,
         deletePlaylist,
         addTrackToPlaylist,
+        removeTrackFromPlaylist,
     };
 
     return <PlaylistContext.Provider value={value}>{children}</PlaylistContext.Provider>;

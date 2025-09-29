@@ -4,7 +4,7 @@ export const HomeIcon = () => (
   <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1-1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"></path></svg>
 );
 export const SearchIcon = () => (
-  <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.533 1.279a9.75 9.75 0 1 0 1.258 19.344 9.75 9.75 0 0 0-1.258-19.344zM2.25 10.5a8.25 8.25 0 1 1 16.5 0 8.25 8.25 0 0 1-16.5 0zM21.994 23.121a1.125 1.125 0 0 1-1.591 0l-3.83-3.83a1.125 1.125 0 1 1 1.591-1.591l3.83 3.83a1.125 1.125 0 0 1 0 1.591z"></path></svg>
+  <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M10.533 1.279a9.75 9.75 0 1 0 1.258 19.344 9.75 9.75 0 0 0-1.258-19.344zM2.5 10.5a8.25 8.25 0 1 1 16.5 0 8.25 8.25 0 0 1-16.5 0zM21.994 23.121a1.125 1.125 0 0 1-1.591 0l-3.83-3.83a1.125 1.125 0 1 1 1.591-1.591l3.83 3.83a1.125 1.125 0 0 1 0 1.591z"></path></svg>
 );
 export const LibraryIcon = () => (
   <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 2.134a1 1 0 0 1 1 0l6 3.464a1 1 0 0 1 .5.866V21a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V3a1 1 0 0 1 .5-.866zM16 4.732V20h4V7.041l-4-2.309zM3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zm6 0a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1z"></path></svg>
@@ -42,10 +42,6 @@ export const MagicIcon = () => (
 
 export const PlusIcon = () => (
     <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16"><path d="M14 7H9V2H7v5H2v2h5v5h2V9h5z"></path></svg>
-);
-
-export const ChevronRightIcon = () => (
-    <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor"><path d="M4.97.47a.75.75 0 0 1 1.06 0l6 6a.75.75 0 0 1 0 1.06l-6 6a.75.75 0 0 1-1.06-1.06L10.44 8 4.97 1.53a.75.75 0 0 1 0-1.06z"></path></svg>
 );
 
 export const ChevronDownIcon = () => (

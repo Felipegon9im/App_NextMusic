@@ -4,7 +4,7 @@ import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import type { Track, Playlist } from './data.ts';
 import type { View } from './App.tsx';
-import { SearchIcon, PlayIcon, ChevronRightIcon, TrashIcon } from './Icons.tsx';
+import { SearchIcon, PlayIcon, TrashIcon, PlusIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 
 
@@ -104,11 +104,19 @@ const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) 
 
 const PlaylistView = ({ playlist } : { playlist: Playlist | null }) => {
     const { playPlaylist } = usePlayer();
+    const { removeTrackFromPlaylist } = usePlaylists();
 
     if (!playlist) return <div>Selecione uma playlist para ver.</div>
 
     const handlePlayTrack = (trackIndex: number) => {
         playPlaylist(playlist.tracks, trackIndex);
+    };
+    
+    const handleRemoveTrack = (e: React.MouseEvent, trackId: string) => {
+        e.stopPropagation();
+        if (playlist) {
+            removeTrackFromPlaylist(playlist.name, trackId);
+        }
     };
 
     return (
@@ -130,6 +138,11 @@ const PlaylistView = ({ playlist } : { playlist: Playlist | null }) => {
                             <span className="track-title">{track.title}</span>
                             <span className="track-artist">{track.artist}</span>
                         </div>
+                        <div className="track-actions">
+                             <button className="icon-button" onClick={(e) => handleRemoveTrack(e, track.id)} title="Remover da playlist">
+                                <TrashIcon />
+                            </button>
+                        </div>
                     </li>
                  ))}
             </ul>
@@ -138,36 +151,38 @@ const PlaylistView = ({ playlist } : { playlist: Playlist | null }) => {
 };
 
 
-const ContextMenu = ({ x, y, show, onClose, track }: { x: number, y: number, show: boolean, onClose: () => void, track: Track | null }) => {
+const AddToPlaylistPopover = ({ anchorEl, show, onClose, track }: { anchorEl: HTMLElement | null, show: boolean, onClose: () => void, track: Track | null }) => {
     const { userPlaylists, addTrackToPlaylist } = usePlaylists();
 
-    if (!show || !track) return null;
+    if (!show || !track || !anchorEl) return null;
 
     const handleAdd = (playlist: Playlist) => {
         addTrackToPlaylist(playlist.name, track);
         onClose();
     };
+    
+    const rect = anchorEl.getBoundingClientRect();
+    const style = {
+      top: rect.bottom + 8,
+      left: rect.left - 180, // Adjust to align better
+    };
 
     return (
         <>
             <div className="context-menu-overlay" onClick={onClose}></div>
-            <div className="context-menu" style={{ top: y, left: x }}>
-                <div className="context-menu-item context-menu-item--submenu">
-                    Adicionar à playlist <ChevronRightIcon />
-                    <div className="context-menu context-menu--submenu">
-                        {userPlaylists.length > 0 ? (
-                            userPlaylists.map(pl => (
-                                <div key={pl.name} className="context-menu-item" onClick={() => handleAdd(pl)}>
-                                    {pl.name}
-                                </div>
-                            ))
-                        ) : (
-                            <div className="context-menu-item" style={{ fontStyle: 'italic', color: 'var(--text-subdued)'}}>
-                                Nenhuma playlist
-                            </div>
-                        )}
+            <div className="context-menu" style={style}>
+                 <div className="context-menu-header">Adicionar à playlist</div>
+                 {userPlaylists.length > 0 ? (
+                    userPlaylists.map(pl => (
+                        <div key={pl.name} className="context-menu-item" onClick={() => handleAdd(pl)}>
+                            {pl.name}
+                        </div>
+                    ))
+                ) : (
+                    <div className="context-menu-item" style={{ fontStyle: 'italic', color: 'var(--text-subdued)'}}>
+                        Nenhuma playlist
                     </div>
-                </div>
+                )}
             </div>
         </>
     );
@@ -180,7 +195,8 @@ const Search = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { playPlaylist } = usePlayer();
-    const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, track: null as Track | null });
+    const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null, track: null as Track | null });
+
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
@@ -199,13 +215,13 @@ const Search = () => {
         return () => clearTimeout(debounceTimer);
     }, [query]);
 
-    const handleContextMenu = (e: React.MouseEvent, track: Track) => {
-        e.preventDefault();
-        setContextMenu({ show: true, x: e.clientX, y: e.clientY, track });
+    const handleOpenPopover = (e: React.MouseEvent<HTMLButtonElement>, track: Track) => {
+        e.stopPropagation();
+        setPopover({ show: true, anchorEl: e.currentTarget, track });
     };
 
-    const closeContextMenu = () => {
-        setContextMenu({ show: false, x: 0, y: 0, track: null });
+    const closePopover = () => {
+        setPopover({ show: false, anchorEl: null, track: null });
     };
 
     return (
@@ -229,22 +245,25 @@ const Search = () => {
                         key={track.id}
                         className="search-result-item"
                         onClick={() => playPlaylist([track])}
-                        onContextMenu={(e) => handleContextMenu(e, track)}
                     >
                         <img src={track.albumArt} alt={track.title} />
                         <div className="track-info">
                             <span className="track-title">{track.title}</span>
                             <span className="track-artist">{track.artist}</span>
                         </div>
+                        <div className="track-actions">
+                            <button className="icon-button" title="Adicionar à playlist" onClick={(e) => handleOpenPopover(e, track)}>
+                                <PlusIcon />
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>
-             <ContextMenu
-                x={contextMenu.x}
-                y={contextMenu.y}
-                show={contextMenu.show}
-                onClose={closeContextMenu}
-                track={contextMenu.track}
+             <AddToPlaylistPopover
+                anchorEl={popover.anchorEl}
+                show={popover.show}
+                onClose={closePopover}
+                track={popover.track}
             />
         </div>
     )
