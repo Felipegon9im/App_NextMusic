@@ -1,0 +1,5 @@
+{
+  "name": "Copy of Next Music",
+  "description": "A Spotify-like music streaming app that uses YouTube as a music database.",
+  "requestFramePermissions": []
+}
