@@ -828,7 +828,6 @@ body {
     padding: 10px 12px;
     font-size: 0.95rem;
     font-weight: 700;
-    border-bottom: 1px solid var(--background-highlight);
 }
 
 .context-menu-item {
@@ -843,6 +842,19 @@ body {
 
 .context-menu-item:hover {
     background-color: var(--background-highlight);
+}
+
+.context-menu-item.create-playlist-item {
+    justify-content: flex-start;
+    gap: 12px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--background-highlight);
+    margin-bottom: 4px;
+}
+
+.context-menu-item.create-playlist-item svg {
+    width: 20px;
+    height: 20px;
 }
 
 
