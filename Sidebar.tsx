@@ -1,4 +1,4 @@
-import React from 'https://esm.sh/react@18.2.0';
+import React from 'react';
 import { HomeIcon, SearchIcon, LibraryIcon } from './Icons.tsx';
 import { userPlaylists } from './data.ts';
 

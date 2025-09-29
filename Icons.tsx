@@ -1,4 +1,4 @@
-import React from 'https://esm.sh/react@18.2.0';
+import React from 'react';
 
 export const HomeIcon = () => (
   <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1-1h-6.5a1 1 0 0 1-1-1v-6h-3v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"></path></svg>
@@ -10,10 +10,10 @@ export const LibraryIcon = () => (
   <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 2.134a1 1 0 0 1 1 0l6 3.464a1 1 0 0 1 .5.866V21a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V3a1 1 0 0 1 .5-.866zM16 4.732V20h4V7.041l-4-2.309zM3 22a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1zm6 0a1 1 0 0 1-1-1V3a1 1 0 0 1 2 0v18a1 1 0 0 1-1 1z"></path></svg>
 );
 export const PlayIcon = () => (
-    <svg height="20" width="20" viewBox="0 0 16 16"><path d="M4.018 14L14.41 8 4.018 2z"></path></svg>
+    <svg viewBox="0 0 16 16"><path d="M4.018 14L14.41 8 4.018 2z"></path></svg>
 );
 export const PauseIcon = () => (
-    <svg height="20" width="20" viewBox="0 0 16 16"><path fill="none" d="M0 0h16v16H0z"></path><path d="M3 2h3v12H3zM10 2h3v12h-3z"></path></svg>
+    <svg viewBox="0 0 16 16"><path fill="none" d="M0 0h16v16H0z"></path><path d="M3 2h3v12H3zM10 2h3v12h-3z"></path></svg>
 );
 
 export const ShuffleIcon = () => (

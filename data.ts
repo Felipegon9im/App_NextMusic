@@ -6,6 +6,8 @@ export const userPlaylists = [
   "Coding Focus",
   "Jazz in the Background",
   "Late Night Drive",
+  "Pop Up",
+  "This is Queen",
 ];
 
 export const mainContentCards = [
@@ -16,12 +18,12 @@ export const mainContentCards = [
   },
   {
     title: "Discover Weekly",
-    description: "Your weekly mixtape of fresh music. Enjoy new discoveries and deep cuts chosen just for you.",
+    description: "Your weekly mixtape of fresh music. Enjoy new discoveries.",
     imageUrl: "https://picsum.photos/300/300?random=2",
   },
   {
     title: "Rock Classics",
-    description: "Rock legends and epic songs that continue to inspire generations. Cover: Queen.",
+    description: "Rock legends and epic songs that continue to inspire.",
     imageUrl: "https://picsum.photos/300/300?random=3",
   },
   {
@@ -33,6 +35,11 @@ export const mainContentCards = [
     title: "Peaceful Piano",
     description: "Relax and indulge with beautiful piano pieces.",
     imageUrl: "https://picsum.photos/300/300?random=5",
+  },
+  {
+    title: "Today's Top Hits",
+    description: "The biggest songs of the moment.",
+    imageUrl: "https://picsum.photos/300/300?random=6",
   },
 ];
 

@@ -112,6 +112,9 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-playlists li:hover {
@@ -224,6 +227,8 @@ body {
   color: var(--text-subdued);
   cursor: pointer;
   transition: color 0.2s ease;
+  padding: 0;
+  line-height: 0;
 }
 
 .player-buttons button:hover {
@@ -252,11 +257,18 @@ body {
   fill: currentColor;
 }
 
+.player-buttons .play-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+
 .progress-bar-container {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
+  max-width: 500px;
   color: var(--text-subdued);
   font-size: 0.75rem;
 }
@@ -266,6 +278,7 @@ body {
   height: 4px;
   background-color: var(--background-elevated-highlight);
   border-radius: 2px;
+  cursor: pointer;
 }
 
 .progress-bar-inner {
