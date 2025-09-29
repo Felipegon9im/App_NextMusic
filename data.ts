@@ -11,12 +11,12 @@ export interface Playlist {
   tracks: Track[];
 }
 
-const API_KEY = process.env.API_KEY; // Use environment variable for security
+const API_KEY = 'AIzaSy...'; // Chave da API do YouTube
 const API_URL = 'https://www.googleapis.com/youtube/v3';
 
 export const searchYoutube = async (query: string): Promise<Track[]> => {
   if (!query) return [];
-  if (!API_KEY) {
+  if (!API_KEY || API_KEY === 'AIzaSy...') {
     throw new Error("A chave da API do YouTube não está configurada.");
   }
   const response = await fetch(`${API_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&videoEmbeddable=true&key=${API_KEY}&maxResults=20`);
