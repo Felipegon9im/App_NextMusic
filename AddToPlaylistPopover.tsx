@@ -2,6 +2,7 @@ import React from 'react';
 import { usePlaylists } from './PlaylistContext.tsx';
 import type { Track, Playlist } from './data.ts';
 import { PlusIcon } from './Icons.tsx';
+import { useNotification } from './NotificationContext.tsx';
 
 interface AddToPlaylistPopoverProps {
     anchorEl: HTMLElement | null;
@@ -12,6 +13,7 @@ interface AddToPlaylistPopoverProps {
 
 export const AddToPlaylistPopover = ({ anchorEl, show, onClose, track }: AddToPlaylistPopoverProps) => {
     const { userPlaylists, addTrackToPlaylist, createPlaylist } = usePlaylists();
+    const { showNotification } = useNotification();
 
     if (!show || !track || !anchorEl) return null;
 
@@ -23,6 +25,7 @@ export const AddToPlaylistPopover = ({ anchorEl, show, onClose, track }: AddToPl
     const handleCreateAndAdd = () => {
         const playlistName = prompt("Nome da nova playlist:");
         if (playlistName && track) {
+            // createPlaylist will show its own notification
             createPlaylist(playlistName, [track]);
             onClose();
         }

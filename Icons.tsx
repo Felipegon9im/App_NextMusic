@@ -32,6 +32,10 @@ export const RepeatIcon = () => (
     <svg viewBox="0 0 16 16"><path d="M13.151.922a.75.75 0 10-1.06 1.06L13.109 3H4.75A4.75 4.75 0 000 7.75v5.5a.75.75 0 001.5 0v-5.5a3.25 3.25 0 013.25-3.25h8.359l-1.018 1.018a.75.75 0 101.06 1.06L15.47 4.5l-2.318-2.318a.75.75 0 00-1.061 1.06z"></path></svg>
 );
 
+export const RepeatOneIcon = () => (
+    <svg viewBox="0 0 16 16"><path d="M13.151.922a.75.75 0 10-1.06 1.06L13.109 3H4.75A4.75 4.75 0 000 7.75v5.5a.75.75 0 001.5 0v-5.5a3.25 3.25 0 013.25-3.25h8.359l-1.018 1.018a.75.75 0 101.06 1.06L15.47 4.5l-2.318-2.318a.75.75 0 00-1.061 1.06z"></path><path d="M9.12 6.53a.75.75 0 00-1.06-1.06L6.59 6.94V3.75a.75.75 0 00-1.5 0v4.5c0 .414.336.75.75.75h4.5a.75.75 0 000-1.5H7.69L9.12 6.53z"></path></svg>
+);
+
 export const VolumeIcon = () => (
     <svg viewBox="0 0 16 16"><path d="M9.741.85a.75.75 0 01.375.65v13a.75.75 0 01-1.125.65l-6.925-4a3.642 3.642 0 01-1.33-4.967 3.639 3.639 0 011.33-1.01l6.925-4a.75.75 0 01.75 0zm-6.924 5.3a2.142 2.142 0 00-.781 3.007c.266.363.66.623 1.098.71l6.406 3.7v-11.4l-6.406 3.7a2.14 2.14 0 00-.317.283z"></path></svg>
 );
@@ -40,8 +44,9 @@ export const MagicIcon = () => (
     <svg role="img" height="24" width="24" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v1.4a.6.6 0 0 0 .515.593l.542.18a3.5 3.5 0 0 1 4.35 4.35l.18.542a.6.6 0 0 0 .593.515H21a1 1 0 0 1 0 2h-1.4a.6.6 0 0 0-.593.515l-.18.542a3.5 3.5 0 0 1-4.35 4.35l-.542.18a.6.6 0 0 0-.515.593V21a1 1 0 0 1-2 0v-1.4a.6.6 0 0 0-.515-.593l-.542-.18a3.5 3.5 0 0 1-4.35-4.35l-.18-.542a.6.6 0 0 0-.593-.515H3a1 1 0 0 1 0-2h1.4a.6.6 0 0 0 .593-.515l.18-.542a3.5 3.5 0 0 1 4.35-4.35l.542-.18A.6.6 0 0 0 11 4.4V3a1 1 0 0 1 1-1zm0 3.515L11.485 6 11 6.182a1.5 1.5 0 0 0-1.864 1.864L9.318 9l-.515.515L9 9.818a1.5 1.5 0 0 0 1.864 1.864L11.182 13l.515.515L12 13.818a1.5 1.5 0 0 0 1.864-1.864L14.682 11l.515-.515L15 9.818a1.5 1.5 0 0 0-1.864-1.864L12.818 7l-.515-.515z"></path></svg>
 );
 
-export const PlusIcon = () => (
-    <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16"><path d="M14 7H9V2H7v5H2v2h5v5h2V9h5z"></path></svg>
+// FIX: Update component to accept props to allow passing style and other svg attributes.
+export const PlusIcon = (props: React.ComponentProps<'svg'>) => (
+    <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16" {...props}><path d="M14 7H9V2H7v5H2v2h5v5h2V9h5z"></path></svg>
 );
 
 export const ChevronDownIcon = () => (
@@ -52,4 +57,8 @@ export const TrashIcon = () => (
   <svg role="img" height="16" width="16" aria-hidden="true" viewBox="0 0 16 16" fill="currentColor">
     <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zM4 4h8v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4z"></path>
   </svg>
+);
+
+export const QueueIcon = () => (
+    <svg viewBox="0 0 16 16"><path d="M15 15H1v-1.5h14V15zm0-4.5H1V9h14v1.5zm-14-7A.5.5 0 01.5 3h15a.5.5 0 010 1H.5a.5.5 0 01-.5-.5z"></path></svg>
 );

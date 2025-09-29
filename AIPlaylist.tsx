@@ -5,6 +5,7 @@ import { searchYoutube, Track, Playlist } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
+import { useNotification } from './NotificationContext.tsx';
 
 // This component is created with the assumption that the API_KEY is set in the environment.
 // As per instructions, this component must not ask the user for the key.
@@ -27,6 +28,7 @@ export const AIPlaylist = () => {
     const [currentLoadingMessage, setCurrentLoadingMessage] = useState(loadingMessages[0]);
     const { playPlaylist } = usePlayer();
     const { createPlaylist } = usePlaylists();
+    const { showNotification } = useNotification();
     const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null, track: null as Track | null });
 
 
@@ -106,7 +108,7 @@ export const AIPlaylist = () => {
     const handleSavePlaylist = () => {
         if (playlistName && playlist && playlist.length > 0) {
             createPlaylist(playlistName, playlist);
-            alert(`Playlist "${playlistName}" salva!`);
+            // Notification is handled by createPlaylist now
         }
     };
     

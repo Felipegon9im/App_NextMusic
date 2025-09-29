@@ -5,6 +5,8 @@ import { Player } from './Player.tsx';
 import { BottomNav } from './BottomNav.tsx';
 import type { Playlist } from './data.ts';
 import { usePlaylists } from './PlaylistContext.tsx';
+import { Notification } from './Notification.tsx';
+import { QueueView } from './QueueView.tsx';
 
 export type View = 'home' | 'search' | 'ai-playlist' | 'library' | 'playlist';
 
@@ -13,6 +15,7 @@ export const App = () => {
     const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+    const [isQueueVisible, setIsQueueVisible] = useState(false);
     const { userPlaylists } = usePlaylists();
 
     useEffect(() => {
@@ -41,27 +44,32 @@ export const App = () => {
     const appContainerClasses = `app-container ${isMobile ? 'mobile-view' : ''} ${isPlayerExpanded ? 'player-expanded' : ''}`.trim();
 
     return (
-        <div className={appContainerClasses}>
-          {isMobile ? (
-            <BottomNav activeView={activeView} setActiveView={setActiveView} />
-          ) : (
-            <Sidebar 
+        <>
+            <div className={appContainerClasses}>
+              {isMobile ? (
+                <BottomNav activeView={activeView} setActiveView={setActiveView} />
+              ) : (
+                <Sidebar 
+                    activeView={activeView} 
+                    setActiveView={setActiveView} 
+                    onSelectPlaylist={handleSelectPlaylist}
+                />
+              )}
+              <MainView 
                 activeView={activeView} 
-                setActiveView={setActiveView} 
+                selectedPlaylist={selectedPlaylist}
                 onSelectPlaylist={handleSelectPlaylist}
-            />
-          )}
-          <MainView 
-            activeView={activeView} 
-            selectedPlaylist={selectedPlaylist}
-            onSelectPlaylist={handleSelectPlaylist}
-            setActiveView={setActiveView}
-          />
-          <Player 
-            isMobile={isMobile}
-            isPlayerExpanded={isPlayerExpanded}
-            setIsPlayerExpanded={setIsPlayerExpanded}
-          />
-        </div>
+                setActiveView={setActiveView}
+              />
+              <Player 
+                isMobile={isMobile}
+                isPlayerExpanded={isPlayerExpanded}
+                setIsPlayerExpanded={setIsPlayerExpanded}
+                setIsQueueVisible={setIsQueueVisible}
+              />
+            </div>
+            <Notification />
+            <QueueView isVisible={isQueueVisible} onClose={() => setIsQueueVisible(false)} />
+        </>
     );
 };

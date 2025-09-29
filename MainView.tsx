@@ -93,11 +93,15 @@ const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) 
     return (
         <>
             <h1>Sua Biblioteca</h1>
-            <div className="card-grid">
-                {userPlaylists.map(playlist => (
-                    <Card key={playlist.name} playlist={playlist} />
-                ))}
-            </div>
+            {userPlaylists.length > 0 ? (
+                <div className="card-grid">
+                    {userPlaylists.map(playlist => (
+                        <Card key={playlist.name} playlist={playlist} />
+                    ))}
+                </div>
+            ) : (
+                <p className="empty-state-message">Sua biblioteca está vazia. Crie sua primeira playlist!</p>
+            )}
         </>
     );
 };
@@ -130,23 +134,27 @@ const PlaylistView = ({ playlist } : { playlist: Playlist | null }) => {
                     <p>{playlist.tracks.length} músicas</p>
                  </div>
             </div>
-            <ul className="playlist-track-list search-results-list">
-                 {playlist.tracks.map((track, index) => (
-                    <li key={track.id + index} className="search-result-item" onClick={() => handlePlayTrack(index)}>
-                        <span className="track-number">{index + 1}</span>
-                        <img src={track.albumArt} alt={track.title} />
-                        <div className="track-info">
-                            <span className="track-title">{track.title}</span>
-                            <span className="track-artist">{track.artist}</span>
-                        </div>
-                        <div className="track-actions">
-                             <button className="icon-button" onClick={(e) => handleRemoveTrack(e, track.id)} title="Remover da playlist">
-                                <TrashIcon />
-                            </button>
-                        </div>
-                    </li>
-                 ))}
-            </ul>
+            {playlist.tracks.length > 0 ? (
+                <ul className="playlist-track-list search-results-list">
+                    {playlist.tracks.map((track, index) => (
+                        <li key={track.id + index} className="search-result-item" onClick={() => handlePlayTrack(index)}>
+                            <span className="track-number">{index + 1}</span>
+                            <img src={track.albumArt} alt={track.title} />
+                            <div className="track-info">
+                                <span className="track-title">{track.title}</span>
+                                <span className="track-artist">{track.artist}</span>
+                            </div>
+                            <div className="track-actions">
+                                <button className="icon-button" onClick={(e) => handleRemoveTrack(e, track.id)} title="Remover da playlist">
+                                    <TrashIcon />
+                                </button>
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <p className="empty-state-message">Esta playlist está vazia. Adicione algumas músicas!</p>
+            )}
         </div>
     )
 };
@@ -156,6 +164,7 @@ const Search = () => {
     const [results, setResults] = useState<Track[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [hasSearched, setHasSearched] = useState(false);
     const { playPlaylist } = usePlayer();
     const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null, track: null as Track | null });
 
@@ -165,12 +174,14 @@ const Search = () => {
             if (query) {
                 setLoading(true);
                 setError(null);
+                setHasSearched(true);
                 searchYoutube(query)
                     .then(setResults)
                     .catch(err => setError(err.message))
                     .finally(() => setLoading(false));
             } else {
                 setResults([]);
+                setHasSearched(false);
             }
         }, 500); // Debounce API calls
 
@@ -201,6 +212,9 @@ const Search = () => {
             </div>
             {loading && <p className="loading-indicator">Buscando...</p>}
             {error && <p className="error-message">Erro: {error}</p>}
+            {!loading && hasSearched && results.length === 0 && (
+                <p className="empty-state-message">Nenhum resultado encontrado para "{query}".</p>
+            )}
             <ul className="search-results-list" aria-live="polite">
                 {results.map(track => (
                     <li

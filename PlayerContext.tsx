@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode, useCallback } from 'react';
 import type { Track } from './data.ts';
 
-// FIX: Removed conflicting redeclaration of MediaMetadata and related types.
-// They are already available in the standard DOM typings.
 declare global {
   interface Window {
     onYouTubeIframeAPIReady: () => void;
@@ -10,19 +8,26 @@ declare global {
   }
 }
 
+type RepeatMode = 'off' | 'playlist' | 'one';
+
 interface PlayerContextType {
   isPlaying: boolean;
   currentTrack: Track | null;
   playlist: Track[];
+  currentIndex: number;
   progress: number;
   duration: number;
   volume: number;
+  shuffleMode: boolean;
+  repeatMode: RepeatMode;
   playPlaylist: (tracks: Track[], startIndex?: number) => void;
   togglePlay: () => void;
   playNext: () => void;
   playPrevious: () => void;
   seekTo: (time: number) => void;
   setVolume: (volume: number) => void;
+  setShuffleMode: (shuffle: boolean) => void;
+  setRepeatMode: (mode: RepeatMode) => void;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -37,20 +42,11 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(1);
+  const [shuffleMode, setShuffleMode] = useState(false);
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
+
 
   const currentTrack = playlist[currentIndex] || null;
-
-  const playNext = useCallback(() => {
-    if (playlist.length === 0 || !playerRef.current) return;
-    const nextIndex = (currentIndex + 1) % playlist.length;
-    playerRef.current.playVideoAt(nextIndex);
-  }, [currentIndex, playlist.length]);
-
-  const playPrevious = useCallback(() => {
-    if (playlist.length === 0 || !playerRef.current) return;
-    const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-    playerRef.current.playVideoAt(prevIndex);
-  }, [currentIndex, playlist.length]);
 
   const playVideo = useCallback(() => {
     if (playerRef.current?.playVideo) {
@@ -62,6 +58,14 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     if (playerRef.current?.pauseVideo) {
       playerRef.current.pauseVideo();
     }
+  }, []);
+
+  const playNext = useCallback(() => {
+    playerRef.current?.nextVideo();
+  }, []);
+  
+  const playPrevious = useCallback(() => {
+    playerRef.current?.previousVideo();
   }, []);
   
   const togglePlay = useCallback(() => {
@@ -106,10 +110,20 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
       }
       
       if (event.data === window.YT.PlayerState.ENDED) {
-        playNext();
+        if (repeatMode === 'one') {
+            playerRef.current?.seekTo(0);
+            playVideo();
+        } else {
+            const currentIdx = playerRef.current?.getPlaylistIndex();
+            const playlistSize = playerRef.current?.getPlaylist()?.length;
+            if (repeatMode === 'playlist' && currentIdx === playlistSize - 1) {
+                playerRef.current?.playVideoAt(0);
+            }
+            // If repeat is 'off', the player will naturally stop after the last song.
+        }
       }
     };
-  }, [volume, currentIndex, playNext]);
+  }, [volume, currentIndex, repeatMode, playVideo]);
   
   useEffect(() => {
     const createPlayer = () => {
@@ -148,7 +162,11 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     setIsPlaying(true);
     if (playerRef.current?.loadPlaylist) {
         const videoIds = tracks.map(t => t.videoId);
-        playerRef.current.loadPlaylist(videoIds, startIndex);
+        playerRef.current.loadPlaylist({
+            playlist: videoIds,
+            index: startIndex,
+        });
+        playerRef.current.setShuffle(shuffleMode);
     }
   };
   
@@ -165,6 +183,13 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
           playerRef.current.setVolume(clampedVolume * 100);
       }
       setVolumeState(clampedVolume);
+  };
+  
+  const handleSetShuffle = (shuffle: boolean) => {
+      setShuffleMode(shuffle);
+      if (playerRef.current?.setShuffle) {
+          playerRef.current.setShuffle(shuffle);
+      }
   };
   
   // Media Session API integration
@@ -194,15 +219,20 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
     isPlaying,
     currentTrack,
     playlist,
+    currentIndex,
     progress,
     duration,
     volume,
+    shuffleMode,
+    repeatMode,
     playPlaylist,
     togglePlay,
     playNext,
     playPrevious,
     seekTo,
     setVolume,
+    setShuffleMode: handleSetShuffle,
+    setRepeatMode,
   };
 
   return <PlayerContext.Provider value={value}>{children}</PlayerContext.Provider>;

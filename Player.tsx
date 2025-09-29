@@ -5,10 +5,12 @@ import {
   ShuffleIcon, 
   PreviousIcon, 
   NextIcon, 
-  RepeatIcon, 
+  RepeatIcon,
+  RepeatOneIcon,
   VolumeIcon,
   ChevronDownIcon,
-  PlusIcon
+  PlusIcon,
+  QueueIcon,
 } from './Icons.tsx';
 import { usePlayer } from './PlayerContext.tsx';
 import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
@@ -24,9 +26,10 @@ interface PlayerProps {
     isMobile: boolean;
     isPlayerExpanded: boolean;
     setIsPlayerExpanded: (expanded: boolean) => void;
+    setIsQueueVisible: (visible: boolean) => void;
 }
 
-export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : PlayerProps) => {
+export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded, setIsQueueVisible } : PlayerProps) => {
   const { 
     isPlaying, 
     currentTrack, 
@@ -38,12 +41,14 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
     seekTo,
     volume,
     setVolume,
+    shuffleMode,
+    setShuffleMode,
+    repeatMode,
+    setRepeatMode,
   } = usePlayer();
   
   const progressBarRef = useRef<HTMLDivElement>(null);
   const volumeBarRef = useRef<HTMLDivElement>(null);
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [isRepeat, setIsRepeat] = useState(false);
   const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null });
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -58,14 +63,13 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
   };
 
   const handleVolumeClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (volumeBarRef.current) {
-        const rect = volumeBarRef.current.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const width = rect.width;
-        if (width > 0) {
-            const newVolume = Math.max(0, Math.min(1, clickX / width));
-            setVolume(newVolume);
-        }
+    const target = e.currentTarget;
+    const rect = target.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const width = rect.width;
+    if (width > 0) {
+        const newVolume = Math.max(0, Math.min(1, clickX / width));
+        setVolume(newVolume);
     }
   };
 
@@ -76,6 +80,17 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
 
   const closePopover = () => {
     setPopover({ show: false, anchorEl: null });
+  };
+  
+  const handleToggleRepeat = () => {
+    // FIX: Argument of type '(current: any) => "playlist" | "off" | "one"' is not assignable to parameter of type 'RepeatMode'.
+    if (repeatMode === 'off') {
+      setRepeatMode('playlist');
+    } else if (repeatMode === 'playlist') {
+      setRepeatMode('one');
+    } else {
+      setRepeatMode('off');
+    }
   };
 
   if (!currentTrack) {
@@ -129,7 +144,7 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
       <div className="player-controls">
         <div className="player-buttons">
           {!isPlayerExpanded && isMobile ? null : (
-            <button title="Shuffle" aria-label="Shuffle" className={isShuffle ? 'active' : ''} onClick={() => setIsShuffle(!isShuffle)}>
+            <button title="Shuffle" aria-label="Shuffle" className={shuffleMode ? 'active' : ''} onClick={() => setShuffleMode(!shuffleMode)}>
               <ShuffleIcon />
             </button>
           )}
@@ -149,8 +164,8 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
           </button>
 
           {!isPlayerExpanded && isMobile ? null : (
-            <button title="Repeat" aria-label="Repeat" className={isRepeat ? 'active' : ''} onClick={() => setIsRepeat(!isRepeat)}>
-              <RepeatIcon />
+            <button title="Repeat" aria-label="Repeat" className={repeatMode !== 'off' ? 'active' : ''} onClick={handleToggleRepeat}>
+              {repeatMode === 'one' ? <RepeatOneIcon /> : <RepeatIcon />}
             </button>
           )}
         </div>
@@ -168,16 +183,21 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
         )}
       </div>
 
-      {!isMobile && (
-          <div className="player-volume">
-            <VolumeIcon />
+      <div className="player-volume">
+        {(!isMobile || isPlayerExpanded) && <VolumeIcon />}
+        {(!isMobile || isPlayerExpanded) && (
             <div className="progress-bar" ref={volumeBarRef} onClick={handleVolumeClick}>
               <div className="progress-bar-inner" style={{width: `${volume * 100}%`}}>
                 <div className="progress-bar-thumb"></div>
               </div>
             </div>
-          </div>
-      )}
+        )}
+        {!isMobile && (
+             <button className="icon-button" title="Fila" onClick={() => setIsQueueVisible(true)}>
+                <QueueIcon />
+            </button>
+        )}
+      </div>
     </>
   );
 

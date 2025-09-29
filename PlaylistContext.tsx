@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import type { Track, Playlist } from './data.ts';
 import { getDefaultPlaylists } from './data.ts';
+import { useNotification } from './NotificationContext.tsx';
 
 const LOCAL_STORAGE_KEY = 'next-music-playlists';
 
@@ -27,6 +28,8 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
         return getDefaultPlaylists();
     });
 
+    const { showNotification } = useNotification();
+
     useEffect(() => {
         try {
             window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userPlaylists));
@@ -37,30 +40,39 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
 
     const createPlaylist = (name: string, tracks: Track[] = []) => {
         if (userPlaylists.some(pl => pl.name === name)) {
-            alert("Uma playlist com este nome já existe.");
+            // Instead of alert, we can use a notification system in the future.
+            showNotification(`A playlist "${name}" já existe.`);
             return;
         }
         const newPlaylist: Playlist = { name, tracks };
         setUserPlaylists(prev => [...prev, newPlaylist]);
+        showNotification(`Playlist "${name}" criada!`);
     };
 
     const deletePlaylist = (name: string) => {
         setUserPlaylists(prev => prev.filter(pl => pl.name !== name));
+        showNotification(`Playlist "${name}" apagada.`);
     };
 
     const addTrackToPlaylist = (playlistName: string, track: Track) => {
+        let wasAdded = false;
         setUserPlaylists(prev => 
             prev.map(pl => {
                 if (pl.name === playlistName) {
-                    // Avoid adding duplicate tracks
                     if (pl.tracks.some(t => t.id === track.id)) {
                         return pl;
                     }
+                    wasAdded = true;
                     return { ...pl, tracks: [...pl.tracks, track] };
                 }
                 return pl;
             })
         );
+        if (wasAdded) {
+            showNotification(`Adicionado a "${playlistName}"`);
+        } else {
+             showNotification(`Esta música já está em "${playlistName}"`);
+        }
     };
     
     const removeTrackFromPlaylist = (playlistName: string, trackId: string) => {
@@ -72,6 +84,7 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
                 return pl;
             })
         );
+        showNotification(`Removido de "${playlistName}"`);
     };
 
     const value = {
