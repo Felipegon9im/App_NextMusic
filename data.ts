@@ -11,7 +11,7 @@ export interface Playlist {
   tracks: Track[];
 }
 
-const API_KEY = 'AIzaSy...'; // Chave da API do YouTube
+const API_KEY = 'IzaSyBkj99XULXH8EVLZQMG0-iJeHiGBDZfJlA'; // Chave da API do YouTube
 const API_URL = 'https://www.googleapis.com/youtube/v3';
 
 export const searchYoutube = async (query: string): Promise<Track[]> => {
