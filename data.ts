@@ -19,7 +19,7 @@ export const searchYoutube = async (query: string): Promise<Track[]> => {
   if (!API_KEY) {
     throw new Error("A chave da API do YouTube não está configurada.");
   }
-  const response = await fetch(`${API_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${API_KEY}&maxResults=20`);
+  const response = await fetch(`${API_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&videoEmbeddable=true&key=${API_KEY}&maxResults=20`);
   if (!response.ok) {
     const errorData = await response.json();
     console.error("YouTube API Error:", errorData);
