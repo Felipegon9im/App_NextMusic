@@ -1,53 +1,77 @@
 export interface Track {
-  id: number;
+  id: string;
+  videoId: string;
   title: string;
   artist: string;
   albumArt: string;
-  audioSrc: string;
 }
+
+const API_KEY = 'AIzaSyBkj99XULXH8EVLZQMG0-iJeHiGBDZfJlA';
+const API_URL = 'https://www.googleapis.com/youtube/v3';
+
+export const searchYoutube = async (query: string): Promise<Track[]> => {
+  if (!query) return [];
+  const response = await fetch(`${API_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&key=${API_KEY}&maxResults=20`);
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("YouTube API Error:", errorData);
+    const errorMessage = errorData?.error?.message || 'Failed to fetch from YouTube API';
+    throw new Error(errorMessage);
+  }
+  const data = await response.json();
+  if (!data.items) return [];
+  return data.items.map((item: any) => ({
+    id: item.id.videoId,
+    videoId: item.id.videoId,
+    title: item.snippet.title,
+    artist: item.snippet.channelTitle,
+    albumArt: item.snippet.thumbnails.high.url,
+  }));
+};
+
 
 export const tracks: Track[] = [
   {
-    id: 1,
-    title: "Morning Mood",
+    id: "w_RLA6sAY-A",
+    videoId: "w_RLA6sAY-A",
+    title: "Peer Gynt Suite No. 1, Op. 46: Morning Mood",
     artist: "Edvard Grieg",
-    albumArt: "https://picsum.photos/300/300?random=1",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    albumArt: "https://i.ytimg.com/vi/w_RLA6sAY-A/hqdefault.jpg",
   },
   {
-    id: 2,
-    title: "Ambient Chill",
-    artist: "SoundHelix",
-    albumArt: "https://picsum.photos/300/300?random=2",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    id: "5qap5aO4i9A",
+    videoId: "5qap5aO4i9A",
+    title: "The Sleeping Prophet",
+    artist: "Keys of Moon",
+    albumArt: "https://i.ytimg.com/vi/5qap5aO4i9A/hqdefault.jpg",
   },
   {
-    id: 3,
-    title: "Electronic Dance",
-    artist: "SoundHelix",
-    albumArt: "https://picsum.photos/300/300?random=3",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    id: "N4d7Wp9kKjA",
+    videoId: "N4d7Wp9kKjA",
+    title: "Invincible",
+    artist: "DEAF KEV",
+    albumArt: "https://i.ytimg.com/vi/N4d7Wp9kKjA/hqdefault.jpg",
   },
     {
-    id: 4,
-    title: "Acoustic Guitar",
-    artist: "SoundHelix",
-    albumArt: "https://picsum.photos/300/300?random=4",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    id: "3So_CoG6-3c",
+    videoId: "3So_CoG6-3c",
+    title: "Relaxing Acoustic Guitar Music",
+    artist: "Relaxing Jazz Music",
+    albumArt: "https://i.ytimg.com/vi/3So_CoG6-3c/hqdefault.jpg",
   },
   {
-    id: 5,
-    title: "Rock Anthem",
-    artist: "SoundHelix",
-    albumArt: "https://picsum.photos/300/300?random=5",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    id: "Q_g-2K5G_4A",
+    videoId: "Q_g-2K5G_4A",
+    title: "Powerful Trap Rock",
+    artist: "Audio Library",
+    albumArt: "https://i.ytimg.com/vi/Q_g-2K5G_4A/hqdefault.jpg",
   },
   {
-    id: 6,
-    title: "Peaceful Piano",
-    artist: "SoundHelix",
-    albumArt: "https://picsum.photos/300/300?random=6",
-    audioSrc: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
+    id: "__2-2s_Jh9w",
+    videoId: "__2-2s_Jh9w",
+    title: "Peaceful & Relaxing Piano Music",
+    artist: "OCB Relax Music",
+    albumArt: "https://i.ytimg.com/vi/__2-2s_Jh9w/hqdefault.jpg",
   },
 ];
 

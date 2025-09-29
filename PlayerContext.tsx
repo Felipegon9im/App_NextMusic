@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useRef, useEffect, ReactNode } from 'react';
 import type { Track } from './data.ts';
 
+declare global {
+  interface Window {
+    onYouTubeIframeAPIReady: () => void;
+    YT: any;
+  }
+}
+
 interface PlayerContextType {
   isPlaying: boolean;
   currentTrack: Track | null;
@@ -17,7 +24,10 @@ interface PlayerContextType {
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export const PlayerProvider = ({ children }: { children: ReactNode }) => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playerRef = useRef<any>(null);
+  // FIX: Initialize useRef with null and use a more flexible type for the interval ID to avoid potential type errors.
+  const progressInterval = useRef<any>(null);
+
   const [playlist, setPlaylist] = useState<Track[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -25,67 +35,91 @@ export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [duration, setDuration] = useState(0);
 
   useEffect(() => {
-    audioRef.current = new Audio();
+    const onPlayerStateChange = (event: any) => {
+      if (event.data === window.YT.PlayerState.PLAYING) {
+        setIsPlaying(true);
+        setDuration(playerRef.current?.getDuration() ?? 0);
+        
+        clearInterval(progressInterval.current);
+        progressInterval.current = setInterval(() => {
+          const currentTime = playerRef.current?.getCurrentTime() ?? 0;
+          setProgress(currentTime);
+        }, 250);
+
+        const newIndex = playerRef.current?.getPlaylistIndex();
+        if (typeof newIndex === 'number' && newIndex !== currentIndex) {
+            setCurrentIndex(newIndex);
+        }
+
+      } else {
+        setIsPlaying(false);
+        clearInterval(progressInterval.current);
+      }
+      
+      if (event.data === window.YT.PlayerState.ENDED) {
+        playNext();
+      }
+    };
     
-    const audio = audioRef.current;
+    window.onYouTubeIframeAPIReady = () => {
+      playerRef.current = new window.YT.Player('youtube-player', {
+        height: '390',
+        width: '640',
+        playerVars: {
+          'playsinline': 1,
+          'controls': 0,
+        },
+        events: {
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    };
 
-    const handleTimeUpdate = () => setProgress(audio.currentTime);
-    const handleLoadedMetadata = () => setDuration(audio.duration);
-    const handleEnded = () => playNext();
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
+    if (window.YT && window.YT.Player) {
+      window.onYouTubeIframeAPIReady();
+    }
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-    };
+        clearInterval(progressInterval.current);
+        playerRef.current?.destroy();
+    }
   }, []);
 
   const currentTrack = playlist[currentIndex] || null;
-
-  useEffect(() => {
-    if (audioRef.current && currentTrack) {
-      audioRef.current.src = currentTrack.audioSrc;
-      if (isPlaying) {
-         audioRef.current.play().catch(e => console.error("Error playing audio:", e));
-      }
-    }
-  }, [currentIndex, playlist]);
 
   const playPlaylist = (tracks: Track[], startIndex = 0) => {
     setPlaylist(tracks);
     setCurrentIndex(startIndex);
     setIsPlaying(true);
+    if (playerRef.current?.loadPlaylist) {
+        const videoIds = tracks.map(t => t.videoId);
+        playerRef.current.loadPlaylist(videoIds, startIndex);
+    }
   };
   
   const togglePlay = () => {
-      if (!currentTrack) return;
-      if (isPlaying) {
-        audioRef.current?.pause();
+      if (!currentTrack || !playerRef.current) return;
+      const playerState = playerRef.current.getPlayerState();
+      if (playerState === window.YT.PlayerState.PLAYING) {
+        playerRef.current.pauseVideo();
       } else {
-        audioRef.current?.play().catch(e => console.error("Error playing audio:", e));
+        playerRef.current.playVideo();
       }
-      setIsPlaying(!isPlaying);
   };
 
   const playNext = () => {
-      if (!playlist.length) return;
-      const nextIndex = (currentIndex + 1) % playlist.length;
-      setCurrentIndex(nextIndex);
+      if (!playlist.length || !playerRef.current) return;
+      playerRef.current.nextVideo();
   };
 
   const playPrevious = () => {
-      if (!playlist.length) return;
-      const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
-      setCurrentIndex(prevIndex);
+      if (!playlist.length || !playerRef.current) return;
+      playerRef.current.previousVideo();
   };
   
   const seekTo = (time: number) => {
-      if(audioRef.current) {
-          audioRef.current.currentTime = time;
+      if(playerRef.current) {
+          playerRef.current.seekTo(time, true);
           setProgress(time);
       }
   };

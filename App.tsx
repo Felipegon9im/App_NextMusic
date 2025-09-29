@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar } from './Sidebar.tsx';
 import { MainView } from './MainView.tsx';
 import { Player } from './Player.tsx';
-import { PlayerProvider } from './PlayerContext.tsx';
 
-export const App = () => (
-    <div className="app-container">
-      <Sidebar />
-      <MainView />
-      <Player />
-    </div>
-);
+export type View = 'home' | 'search';
+
+export const App = () => {
+    const [activeView, setActiveView] = useState<View>('home');
+
+    return (
+        <div className="app-container">
+          <Sidebar activeView={activeView} setActiveView={setActiveView} />
+          <MainView activeView={activeView} />
+          <Player />
+        </div>
+    );
+};
