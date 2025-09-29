@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { 
   PlayIcon, 
   PauseIcon, 
@@ -8,18 +8,60 @@ import {
   RepeatIcon, 
   VolumeIcon 
 } from './Icons.tsx';
-import { currentSong } from './data.ts';
+import { usePlayer } from './PlayerContext.tsx';
+
+const formatTime = (seconds: number) => {
+  const flooredSeconds = Math.floor(seconds || 0);
+  const min = Math.floor(flooredSeconds / 60);
+  const sec = flooredSeconds % 60;
+  return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+};
 
 export const Player = () => {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const { 
+    isPlaying, 
+    currentTrack, 
+    togglePlay,
+    playNext,
+    playPrevious,
+    progress,
+    duration,
+    seekTo
+  } = usePlayer();
+  
+  const progressBarRef = useRef<HTMLDivElement>(null);
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (progressBarRef.current && duration > 0) {
+      const rect = progressBarRef.current.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const width = rect.width;
+      const percentage = clickX / width;
+      seekTo(duration * percentage);
+    }
+  };
+
+  if (!currentTrack) {
+    return (
+      <footer className="player">
+        <div className="player-song-info"></div>
+        <div className="player-controls">
+           <p>Select a song to play</p>
+        </div>
+        <div className="player-volume"></div>
+      </footer>
+    );
+  }
+
+  const progressPercentage = duration > 0 ? (progress / duration) * 100 : 0;
 
   return (
     <footer className="player">
       <div className="player-song-info">
-        <img src={currentSong.albumArt} alt={currentSong.title} />
+        <img src={currentTrack.albumArt} alt={currentTrack.title} />
         <div className="details">
-          <h5>{currentSong.title}</h5>
-          <p>{currentSong.artist}</p>
+          <h5>{currentTrack.title}</h5>
+          <p>{currentTrack.artist}</p>
         </div>
       </div>
       <div className="player-controls">
@@ -27,13 +69,13 @@ export const Player = () => {
           <button title="Shuffle">
             <ShuffleIcon />
           </button>
-          <button title="Previous">
+          <button title="Previous" onClick={playPrevious}>
             <PreviousIcon />
           </button>
-          <button className="play-button" onClick={() => setIsPlaying(!isPlaying)} title={isPlaying ? "Pause" : "Play"}>
+          <button className="play-button" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
-          <button title="Next">
+          <button title="Next" onClick={playNext}>
             <NextIcon />
           </button>
           <button title="Repeat">
@@ -41,9 +83,11 @@ export const Player = () => {
           </button>
         </div>
         <div className="progress-bar-container">
-            <span>1:02</span>
-            <div className="progress-bar"><div className="progress-bar-inner"></div></div>
-            <span>3:24</span>
+            <span>{formatTime(progress)}</span>
+            <div className="progress-bar" ref={progressBarRef} onClick={handleProgressClick}>
+              <div className="progress-bar-inner" style={{width: `${progressPercentage}%`}}></div>
+            </div>
+            <span>{formatTime(duration)}</span>
         </div>
       </div>
       <div className="player-volume">
