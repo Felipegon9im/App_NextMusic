@@ -66,33 +66,39 @@ export const Player = () => {
       </div>
       <div className="player-controls">
         <div className="player-buttons">
-          <button title="Shuffle">
+          <button title="Shuffle" aria-label="Shuffle">
             <ShuffleIcon />
           </button>
-          <button title="Previous" onClick={playPrevious}>
+          <button title="Previous" onClick={playPrevious} aria-label="Previous track">
             <PreviousIcon />
           </button>
-          <button className="play-button" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"}>
+          <button className="play-button" onClick={togglePlay} title={isPlaying ? "Pause" : "Play"} aria-label={isPlaying ? "Pause" : "Play"}>
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
-          <button title="Next" onClick={playNext}>
+          <button title="Next" onClick={playNext} aria-label="Next track">
             <NextIcon />
           </button>
-          <button title="Repeat">
+          <button title="Repeat" aria-label="Repeat">
             <RepeatIcon />
           </button>
         </div>
         <div className="progress-bar-container">
             <span>{formatTime(progress)}</span>
             <div className="progress-bar" ref={progressBarRef} onClick={handleProgressClick}>
-              <div className="progress-bar-inner" style={{width: `${progressPercentage}%`}}></div>
+              <div className="progress-bar-inner" style={{width: `${progressPercentage}%`}}>
+                <div className="progress-bar-thumb"></div>
+              </div>
             </div>
             <span>{formatTime(duration)}</span>
         </div>
       </div>
       <div className="player-volume">
         <VolumeIcon />
-        <div className="progress-bar"><div className="progress-bar-inner" style={{width: '70%'}}></div></div>
+        <div className="progress-bar">
+          <div className="progress-bar-inner" style={{width: '70%'}}>
+            <div className="progress-bar-thumb"></div>
+          </div>
+        </div>
       </div>
     </footer>
   );
