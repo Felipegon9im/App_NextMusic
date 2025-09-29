@@ -1,19 +1,20 @@
 import React from 'react';
 import { HomeIcon, SearchIcon, LibraryIcon, MagicIcon, PlusIcon } from './Icons.tsx';
-import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import type { View } from './App.tsx';
+import type { Playlist } from './data.ts';
 
 interface SidebarProps {
   activeView: View;
   setActiveView: (view: View) => void;
+  onSelectPlaylist: (playlist: Playlist) => void;
 }
 
-export const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
-  const { playPlaylist } = usePlayer();
+export const Sidebar = ({ activeView, setActiveView, onSelectPlaylist }: SidebarProps) => {
   const { userPlaylists, createPlaylist } = usePlaylists();
 
-  const handleCreatePlaylist = () => {
+  const handleCreatePlaylist = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const playlistName = prompt('Nome da nova playlist:');
     if (playlistName) {
       createPlaylist(playlistName);
@@ -29,20 +30,22 @@ export const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
             <li><a onClick={() => setActiveView('home')} className={activeView === 'home' ? 'active' : ''}><HomeIcon /><span>Início</span></a></li>
             <li><a onClick={() => setActiveView('search')} className={activeView === 'search' ? 'active' : ''}><SearchIcon /><span>Buscar</span></a></li>
             <li><a onClick={() => setActiveView('ai-playlist')} className={activeView === 'ai-playlist' ? 'active' : ''}><MagicIcon /><span>AI Playlist</span></a></li>
-            <li><a><LibraryIcon /><span>Sua Biblioteca</span></a></li>
           </ul>
         </nav>
       </div>
       <div className="sidebar-playlists">
-        <div className="playlist-header">
-            <h3>Playlists</h3>
+        <div className="playlist-header" onClick={() => setActiveView('library')}>
+            <div className="playlist-header-title">
+                <LibraryIcon />
+                <span>Sua Biblioteca</span>
+            </div>
             <button className="icon-button" title="Create Playlist" onClick={handleCreatePlaylist}>
                 <PlusIcon />
             </button>
         </div>
         <ul>
           {userPlaylists.map(playlist => (
-            <li key={playlist.name} onClick={() => playPlaylist(playlist.tracks)}>
+            <li key={playlist.name} onClick={() => onSelectPlaylist(playlist)}>
               {playlist.name}
             </li>
           ))}

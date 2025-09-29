@@ -8,7 +8,7 @@ import { SearchIcon, PlayIcon, ChevronRightIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 
 
-const Home = () => {
+const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) => void }) => {
   const { playPlaylist } = usePlayer();
 
   const Card = ({ title, description, imageUrl, tracks }: {
@@ -22,8 +22,12 @@ const Home = () => {
         playPlaylist(tracks);
     };
 
+    const handleViewPlaylist = () => {
+        onSelectPlaylist({name: title, tracks});
+    };
+
     return (
-      <div className="card" onClick={() => playPlaylist(tracks)}>
+      <div className="card" onClick={handleViewPlaylist}>
         <img src={imageUrl} alt={title} />
         <h4>{title}</h4>
         <p>{description}</p>
@@ -48,6 +52,81 @@ const Home = () => {
     </>
   );
 };
+
+const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) => void }) => {
+    const { userPlaylists } = usePlaylists();
+    const { playPlaylist } = usePlayer();
+
+    const Card = ({ playlist }: { playlist: Playlist }) => {
+        const handlePlay = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (playlist.tracks.length > 0) {
+                playPlaylist(playlist.tracks);
+            }
+        };
+
+        return (
+            <div className="card" onClick={() => onSelectPlaylist(playlist)}>
+                <img src={playlist.tracks[0]?.albumArt || 'https://picsum.photos/300/300?random=' + playlist.name} alt={playlist.name} />
+                <h4>{playlist.name}</h4>
+                <p>{playlist.tracks.length} {playlist.tracks.length === 1 ? 'música' : 'músicas'}</p>
+                 {playlist.tracks.length > 0 && (
+                    <button className="play-button-overlay" onClick={handlePlay}>
+                        <PlayIcon />
+                    </button>
+                 )}
+            </div>
+        );
+    };
+
+    return (
+        <>
+            <h1>Sua Biblioteca</h1>
+            <div className="card-grid">
+                {userPlaylists.map(playlist => (
+                    <Card key={playlist.name} playlist={playlist} />
+                ))}
+            </div>
+        </>
+    );
+};
+
+
+const PlaylistView = ({ playlist } : { playlist: Playlist | null }) => {
+    const { playPlaylist } = usePlayer();
+
+    if (!playlist) return <div>Selecione uma playlist para ver.</div>
+
+    const handlePlayTrack = (trackIndex: number) => {
+        playPlaylist(playlist.tracks, trackIndex);
+    };
+
+    return (
+        <div className="playlist-view">
+            <div className="playlist-view-header">
+                 <img src={playlist.tracks[0]?.albumArt || 'https://picsum.photos/300/300?random=' + playlist.name} alt={playlist.name} />
+                 <div className="playlist-view-header-details">
+                    <p>Playlist</p>
+                    <h1>{playlist.name}</h1>
+                    <p>{playlist.tracks.length} músicas</p>
+                 </div>
+            </div>
+            <ul className="playlist-track-list search-results-list">
+                 {playlist.tracks.map((track, index) => (
+                    <li key={track.id + index} className="search-result-item" onClick={() => handlePlayTrack(index)}>
+                        <span className="track-number">{index + 1}</span>
+                        <img src={track.albumArt} alt={track.title} />
+                        <div className="track-info">
+                            <span className="track-title">{track.title}</span>
+                            <span className="track-artist">{track.artist}</span>
+                        </div>
+                    </li>
+                 ))}
+            </ul>
+        </div>
+    )
+};
+
 
 const ContextMenu = ({ x, y, show, onClose, track }: { x: number, y: number, show: boolean, onClose: () => void, track: Track | null }) => {
     const { userPlaylists, addTrackToPlaylist } = usePlaylists();
@@ -163,16 +242,23 @@ const Search = () => {
 
 interface MainViewProps {
   activeView: View;
+  selectedPlaylist: Playlist | null;
+  onSelectPlaylist: (playlist: Playlist) => void;
+  setActiveView: (view: View) => void;
 }
 
-export const MainView = ({ activeView }: MainViewProps) => {
+export const MainView = ({ activeView, selectedPlaylist, onSelectPlaylist }: MainViewProps) => {
   switch (activeView) {
     case 'search':
       return <Search />;
     case 'ai-playlist':
       return <AIPlaylist />;
+    case 'library':
+        return <Library onSelectPlaylist={onSelectPlaylist} />;
+    case 'playlist':
+        return <PlaylistView playlist={selectedPlaylist} />;
     case 'home':
     default:
-      return <Home />;
+      return <Home onSelectPlaylist={onSelectPlaylist} />;
   }
 };
