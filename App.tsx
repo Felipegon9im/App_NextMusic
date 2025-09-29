@@ -4,6 +4,7 @@ import { MainView } from './MainView.tsx';
 import { Player } from './Player.tsx';
 import { BottomNav } from './BottomNav.tsx';
 import type { Playlist } from './data.ts';
+import { usePlaylists } from './PlaylistContext.tsx';
 
 export type View = 'home' | 'search' | 'ai-playlist' | 'library' | 'playlist';
 
@@ -12,12 +13,25 @@ export const App = () => {
     const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [isPlayerExpanded, setIsPlayerExpanded] = useState(false);
+    const { userPlaylists } = usePlaylists();
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth <= 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    useEffect(() => {
+        // If we are in playlist view but the selected playlist doesn't exist anymore
+        if (activeView === 'playlist' && selectedPlaylist) {
+            const playlistExists = userPlaylists.some(p => p.name === selectedPlaylist.name);
+            if (!playlistExists) {
+                // It was deleted, so go back to the library
+                setActiveView('library');
+                setSelectedPlaylist(null);
+            }
+        }
+    }, [userPlaylists, selectedPlaylist, activeView]);
 
     const handleSelectPlaylist = (playlist: Playlist) => {
         setSelectedPlaylist(playlist);

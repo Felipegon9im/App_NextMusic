@@ -7,6 +7,7 @@ const LOCAL_STORAGE_KEY = 'next-music-playlists';
 interface PlaylistContextType {
   userPlaylists: Playlist[];
   createPlaylist: (name: string) => void;
+  deletePlaylist: (name: string) => void;
   addTrackToPlaylist: (playlistName: string, track: Track) => void;
 }
 
@@ -42,6 +43,10 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
         setUserPlaylists(prev => [...prev, newPlaylist]);
     };
 
+    const deletePlaylist = (name: string) => {
+        setUserPlaylists(prev => prev.filter(pl => pl.name !== name));
+    };
+
     const addTrackToPlaylist = (playlistName: string, track: Track) => {
         setUserPlaylists(prev => 
             prev.map(pl => {
@@ -60,6 +65,7 @@ export const PlaylistProvider = ({ children }: { children: ReactNode }) => {
     const value = {
         userPlaylists,
         createPlaylist,
+        deletePlaylist,
         addTrackToPlaylist,
     };
 

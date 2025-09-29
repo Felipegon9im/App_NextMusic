@@ -4,7 +4,7 @@ import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import type { Track, Playlist } from './data.ts';
 import type { View } from './App.tsx';
-import { SearchIcon, PlayIcon, ChevronRightIcon } from './Icons.tsx';
+import { SearchIcon, PlayIcon, ChevronRightIcon, TrashIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 
 
@@ -54,7 +54,7 @@ const Home = ({ onSelectPlaylist } : { onSelectPlaylist: (playlist: Playlist) =>
 };
 
 const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) => void }) => {
-    const { userPlaylists } = usePlaylists();
+    const { userPlaylists, deletePlaylist } = usePlaylists();
     const { playPlaylist } = usePlayer();
 
     const Card = ({ playlist }: { playlist: Playlist }) => {
@@ -65,8 +65,18 @@ const Library = ({ onSelectPlaylist }: { onSelectPlaylist: (playlist: Playlist) 
             }
         };
 
+        const handleDelete = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            if (window.confirm(`Tem certeza que quer apagar a playlist "${playlist.name}"?`)) {
+                deletePlaylist(playlist.name);
+            }
+        };
+
         return (
             <div className="card" onClick={() => onSelectPlaylist(playlist)}>
+                <button className="delete-button-overlay" onClick={handleDelete} title="Apagar playlist">
+                    <TrashIcon />
+                </button>
                 <img src={playlist.tracks[0]?.albumArt || 'https://picsum.photos/300/300?random=' + playlist.name} alt={playlist.name} />
                 <h4>{playlist.name}</h4>
                 <p>{playlist.tracks.length} {playlist.tracks.length === 1 ? 'música' : 'músicas'}</p>

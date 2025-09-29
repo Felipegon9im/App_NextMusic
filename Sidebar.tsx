@@ -1,5 +1,5 @@
 import React from 'react';
-import { HomeIcon, SearchIcon, LibraryIcon, MagicIcon, PlusIcon } from './Icons.tsx';
+import { HomeIcon, SearchIcon, LibraryIcon, MagicIcon, PlusIcon, TrashIcon } from './Icons.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
 import type { View } from './App.tsx';
 import type { Playlist } from './data.ts';
@@ -11,13 +11,20 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ activeView, setActiveView, onSelectPlaylist }: SidebarProps) => {
-  const { userPlaylists, createPlaylist } = usePlaylists();
+  const { userPlaylists, createPlaylist, deletePlaylist } = usePlaylists();
 
   const handleCreatePlaylist = (e: React.MouseEvent) => {
     e.stopPropagation();
     const playlistName = prompt('Nome da nova playlist:');
     if (playlistName) {
       createPlaylist(playlistName);
+    }
+  };
+
+  const handleDeletePlaylist = (e: React.MouseEvent, playlistName: string) => {
+    e.stopPropagation();
+    if (window.confirm(`Tem certeza que quer apagar a playlist "${playlistName}"?`)) {
+      deletePlaylist(playlistName);
     }
   };
 
@@ -46,7 +53,16 @@ export const Sidebar = ({ activeView, setActiveView, onSelectPlaylist }: Sidebar
         <ul>
           {userPlaylists.map(playlist => (
             <li key={playlist.name} onClick={() => onSelectPlaylist(playlist)}>
-              {playlist.name}
+              <span style={{ flexGrow: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {playlist.name}
+              </span>
+              <button
+                className="delete-button"
+                title="Apagar playlist"
+                onClick={(e) => handleDeletePlaylist(e, playlist.name)}
+              >
+                <TrashIcon />
+              </button>
             </li>
           ))}
         </ul>
