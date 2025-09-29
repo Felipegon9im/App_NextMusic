@@ -6,6 +6,11 @@ export interface Track {
   albumArt: string;
 }
 
+export interface Playlist {
+  name: string;
+  tracks: Track[];
+}
+
 const API_KEY = 'AIzaSyBkj99XULXH8EVLZQMG0-iJeHiGBDZfJlA';
 const API_URL = 'https://www.googleapis.com/youtube/v3';
 
@@ -75,13 +80,14 @@ export const tracks: Track[] = [
   },
 ];
 
-export const userPlaylists = [
+export const getDefaultPlaylists = (): Playlist[] => [
   { name: "Lofi hip hop music - beats to relax/study to", tracks: [tracks[0], tracks[1], tracks[2]] },
   { name: "Rock Classics", tracks: [tracks[3], tracks[4]] },
   { name: "Workout Mix", tracks: [tracks[2], tracks[4]] },
   { name: "Indie 2024", tracks: [tracks[0], tracks[3]] },
   { name: "Coding Focus", tracks: [tracks[1], tracks[5]] },
 ];
+
 
 export const mainContentCards = [
   {

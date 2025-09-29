@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { mainContentCards, searchYoutube } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
-import type { Track } from './data.ts';
+import { usePlaylists } from './PlaylistContext.tsx';
+import type { Track, Playlist } from './data.ts';
 import type { View } from './App.tsx';
-import { SearchIcon, PlayIcon } from './Icons.tsx';
+import { SearchIcon, PlayIcon, ChevronRightIcon } from './Icons.tsx';
 import { AIPlaylist } from './AIPlaylist.tsx';
 
 
@@ -48,12 +49,49 @@ const Home = () => {
   );
 };
 
+const ContextMenu = ({ x, y, show, onClose, track }: { x: number, y: number, show: boolean, onClose: () => void, track: Track | null }) => {
+    const { userPlaylists, addTrackToPlaylist } = usePlaylists();
+
+    if (!show || !track) return null;
+
+    const handleAdd = (playlist: Playlist) => {
+        addTrackToPlaylist(playlist.name, track);
+        onClose();
+    };
+
+    return (
+        <>
+            <div className="context-menu-overlay" onClick={onClose}></div>
+            <div className="context-menu" style={{ top: y, left: x }}>
+                <div className="context-menu-item context-menu-item--submenu">
+                    Adicionar à playlist <ChevronRightIcon />
+                    <div className="context-menu context-menu--submenu">
+                        {userPlaylists.length > 0 ? (
+                            userPlaylists.map(pl => (
+                                <div key={pl.name} className="context-menu-item" onClick={() => handleAdd(pl)}>
+                                    {pl.name}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="context-menu-item" style={{ fontStyle: 'italic', color: 'var(--text-subdued)'}}>
+                                Nenhuma playlist
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+};
+
+
 const Search = () => {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<Track[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const { playPlaylist } = usePlayer();
+    const [contextMenu, setContextMenu] = useState({ show: false, x: 0, y: 0, track: null as Track | null });
 
     useEffect(() => {
         const debounceTimer = setTimeout(() => {
@@ -72,6 +110,15 @@ const Search = () => {
         return () => clearTimeout(debounceTimer);
     }, [query]);
 
+    const handleContextMenu = (e: React.MouseEvent, track: Track) => {
+        e.preventDefault();
+        setContextMenu({ show: true, x: e.clientX, y: e.clientY, track });
+    };
+
+    const closeContextMenu = () => {
+        setContextMenu({ show: false, x: 0, y: 0, track: null });
+    };
+
     return (
         <div className="search-view">
             <div className="search-input-container">
@@ -89,7 +136,12 @@ const Search = () => {
             {error && <p className="error-message">Erro: {error}</p>}
             <ul className="search-results-list" aria-live="polite">
                 {results.map(track => (
-                    <li key={track.id} className="search-result-item" onClick={() => playPlaylist([track])}>
+                    <li
+                        key={track.id}
+                        className="search-result-item"
+                        onClick={() => playPlaylist([track])}
+                        onContextMenu={(e) => handleContextMenu(e, track)}
+                    >
                         <img src={track.albumArt} alt={track.title} />
                         <div className="track-info">
                             <span className="track-title">{track.title}</span>
@@ -98,6 +150,13 @@ const Search = () => {
                     </li>
                 ))}
             </ul>
+             <ContextMenu
+                x={contextMenu.x}
+                y={contextMenu.y}
+                show={contextMenu.show}
+                onClose={closeContextMenu}
+                track={contextMenu.track}
+            />
         </div>
     )
 }

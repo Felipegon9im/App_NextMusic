@@ -1,7 +1,7 @@
 import React from 'react';
 import { HomeIcon, SearchIcon, LibraryIcon, MagicIcon, PlusIcon } from './Icons.tsx';
-import { userPlaylists } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
+import { usePlaylists } from './PlaylistContext.tsx';
 import type { View } from './App.tsx';
 
 interface SidebarProps {
@@ -11,6 +11,14 @@ interface SidebarProps {
 
 export const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
   const { playPlaylist } = usePlayer();
+  const { userPlaylists, createPlaylist } = usePlaylists();
+
+  const handleCreatePlaylist = () => {
+    const playlistName = prompt('Nome da nova playlist:');
+    if (playlistName) {
+      createPlaylist(playlistName);
+    }
+  };
 
   return (
     <aside className="sidebar">
@@ -28,7 +36,7 @@ export const Sidebar = ({ activeView, setActiveView }: SidebarProps) => {
       <div className="sidebar-playlists">
         <div className="playlist-header">
             <h3>Playlists</h3>
-            <button className="icon-button" title="Create Playlist">
+            <button className="icon-button" title="Create Playlist" onClick={handleCreatePlaylist}>
                 <PlusIcon />
             </button>
         </div>
