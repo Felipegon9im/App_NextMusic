@@ -83,14 +83,10 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded, setIsQ
   };
   
   const handleToggleRepeat = () => {
-    // FIX: Argument of type '(current: any) => "playlist" | "off" | "one"' is not assignable to parameter of type 'RepeatMode'.
-    if (repeatMode === 'off') {
-      setRepeatMode('playlist');
-    } else if (repeatMode === 'playlist') {
-      setRepeatMode('one');
-    } else {
-      setRepeatMode('off');
-    }
+    // FIX: The type of `setRepeatMode` from the context does not accept a function.
+    // We read the current `repeatMode` and pass the next value directly.
+    const nextMode = repeatMode === 'off' ? 'playlist' : repeatMode === 'playlist' ? 'one' : 'off';
+    setRepeatMode(nextMode);
   };
 
   if (!currentTrack) {

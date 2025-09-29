@@ -11,19 +11,37 @@ export interface Playlist {
   tracks: Track[];
 }
 
-const API_KEY = 'IzaSyBkj99XULXH8EVLZQMG0-iJeHiGBDZfJlA'; // Chave da API do YouTube
+const API_KEY = 'AIzaSyBkj99XULXH8EVLZQMG0-iJeHiGBDZfJlA'; // Chave da API do YouTube
 const API_URL = 'https://www.googleapis.com/youtube/v3';
 
 export const searchYoutube = async (query: string): Promise<Track[]> => {
   if (!query) return [];
-  if (!API_KEY || API_KEY === 'AIzaSy...') {
+  // The previous check for API_KEY.startsWith('AIzaSy') was incorrect as valid keys can start with this prefix.
+  if (!API_KEY) {
     throw new Error("A chave da API do YouTube não está configurada.");
   }
   const response = await fetch(`${API_URL}/search?part=snippet&q=${encodeURIComponent(query)}&type=video&videoCategoryId=10&videoEmbeddable=true&key=${API_KEY}&maxResults=20`);
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData;
+    try {
+        errorData = await response.json();
+    } catch (e) {
+        errorData = await response.text();
+    }
+    
     console.error("YouTube API Error:", errorData);
-    const errorMessage = errorData?.error?.message || 'Failed to fetch from YouTube API';
+    let errorMessage = 'Falha ao buscar na API do YouTube.';
+
+    if (typeof errorData === 'string') {
+        errorMessage = errorData;
+    } else if (errorData && typeof errorData.error?.message === 'string') {
+        errorMessage = errorData.error.message;
+    } else if (errorData?.error?.errors?.[0] && typeof errorData.error.errors[0].message === 'string') {
+        errorMessage = errorData.error.errors[0].message;
+    } else if (typeof errorData === 'object' && errorData !== null) {
+        errorMessage = `Recebida uma estrutura de erro inesperada: ${JSON.stringify(errorData)}`;
+    }
+    
     throw new Error(errorMessage);
   }
   const data = await response.json();
