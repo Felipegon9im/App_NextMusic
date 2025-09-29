@@ -7,9 +7,11 @@ import {
   NextIcon, 
   RepeatIcon, 
   VolumeIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  PlusIcon
 } from './Icons.tsx';
 import { usePlayer } from './PlayerContext.tsx';
+import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
 
 const formatTime = (seconds: number) => {
   const flooredSeconds = Math.floor(seconds || 0);
@@ -42,6 +44,7 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
   const volumeBarRef = useRef<HTMLDivElement>(null);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
+  const [popover, setPopover] = useState({ show: false, anchorEl: null as HTMLElement | null });
 
   const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -64,6 +67,15 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
             setVolume(newVolume);
         }
     }
+  };
+
+  const handleOpenPopover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    setPopover({ show: true, anchorEl: e.currentTarget });
+  };
+
+  const closePopover = () => {
+    setPopover({ show: false, anchorEl: null });
   };
 
   if (!currentTrack) {
@@ -109,6 +121,9 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
           <h5>{currentTrack.title}</h5>
           <p>{currentTrack.artist}</p>
         </div>
+        <button className="icon-button add-to-playlist-button" title="Adicionar à playlist" onClick={handleOpenPopover}>
+            <PlusIcon />
+        </button>
       </div>
       
       <div className="player-controls">
@@ -167,8 +182,16 @@ export const Player = ({ isMobile, isPlayerExpanded, setIsPlayerExpanded } : Pla
   );
 
   return (
-    <footer className={playerClasses}>
-      {playerContent}
-    </footer>
+    <>
+        <footer className={playerClasses}>
+          {playerContent}
+        </footer>
+        <AddToPlaylistPopover
+            anchorEl={popover.anchorEl}
+            show={popover.show}
+            onClose={closePopover}
+            track={currentTrack}
+        />
+    </>
   );
 };

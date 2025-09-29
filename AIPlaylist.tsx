@@ -4,6 +4,7 @@ import { MagicIcon, PlusIcon } from './Icons.tsx';
 import { searchYoutube, Track, Playlist } from './data.ts';
 import { usePlayer } from './PlayerContext.tsx';
 import { usePlaylists } from './PlaylistContext.tsx';
+import { AddToPlaylistPopover } from './AddToPlaylistPopover.tsx';
 
 // This component is created with the assumption that the API_KEY is set in the environment.
 // As per instructions, this component must not ask the user for the key.
@@ -16,45 +17,6 @@ const loadingMessages = [
     "Mixando uma playlist fresquinha...",
     "Aquecendo os sintetizadores...",
 ];
-
-
-const AddToPlaylistPopover = ({ anchorEl, show, onClose, track }: { anchorEl: HTMLElement | null, show: boolean, onClose: () => void, track: Track | null }) => {
-    const { userPlaylists, addTrackToPlaylist } = usePlaylists();
-
-    if (!show || !track || !anchorEl) return null;
-
-    const handleAdd = (playlist: Playlist) => {
-        addTrackToPlaylist(playlist.name, track);
-        onClose();
-    };
-    
-    const rect = anchorEl.getBoundingClientRect();
-    const style = {
-      top: rect.bottom + 8,
-      left: rect.left - 180, // Adjust to align better
-    };
-
-    return (
-        <>
-            <div className="context-menu-overlay" onClick={onClose}></div>
-            <div className="context-menu" style={style}>
-                 <div className="context-menu-header">Adicionar à playlist</div>
-                 {userPlaylists.length > 0 ? (
-                    userPlaylists.map(pl => (
-                        <div key={pl.name} className="context-menu-item" onClick={() => handleAdd(pl)}>
-                            {pl.name}
-                        </div>
-                    ))
-                ) : (
-                    <div className="context-menu-item" style={{ fontStyle: 'italic', color: 'var(--text-subdued)'}}>
-                        Nenhuma playlist
-                    </div>
-                )}
-            </div>
-        </>
-    );
-};
-
 
 export const AIPlaylist = () => {
     const [prompt, setPrompt] = useState('');

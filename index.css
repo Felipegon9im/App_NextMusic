@@ -387,24 +387,48 @@ body {
   gap: 1rem;
   width: 30%;
   min-width: 180px;
+  overflow: hidden;
 }
 
 .player-song-info img {
   width: 56px;
   height: 56px;
   border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.player-song-info .details {
+  overflow: hidden;
+  white-space: nowrap;
+  flex-grow: 1;
+}
+
+.player-song-info .details h5,
+.player-song-info .details p {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .player-song-info .details h5 {
-  margin: 0;
   font-size: 0.9rem;
   font-weight: 500;
 }
 
 .player-song-info .details p {
-  margin: 0;
   font-size: 0.75rem;
   color: var(--text-subdued);
+}
+
+.player-song-info .add-to-playlist-button {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    flex-shrink: 0;
+    margin-left: 8px;
+}
+.player-song-info:hover .add-to-playlist-button {
+    opacity: 1;
 }
 
 .player-controls {
@@ -946,6 +970,10 @@ body {
     }
     .player.mini-player .progress-bar-container { display: none; }
     .player.mini-player .player-volume { display: none; }
+    .player.mini-player .add-to-playlist-button svg {
+        width: 16px;
+        height: 16px;
+    }
 
 
     .player.fullscreen-player {
@@ -958,6 +986,13 @@ body {
         justify-content: space-around;
         padding: 2rem;
         z-index: 1001;
+    }
+    
+    .fullscreen-player .player-song-info .add-to-playlist-button {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        opacity: 1;
     }
 
     .fullscreen-player .header {
@@ -990,6 +1025,7 @@ body {
         flex-direction: column;
         width: 100%;
         text-align: center;
+        position: relative;
     }
     .fullscreen-player .player-song-info .details h5 {
         font-size: 1.5rem;
